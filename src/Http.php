@@ -40,7 +40,7 @@ class Http
         return $result;
     }
 
-    public static function do_post_request(string $url, array $postData, string $data): stdClass
+    public static function doPostRequest(string $url, array $postData, string $data): stdClass
     {
         $str = '';
         foreach ($postData as $key => $value) {
