@@ -1,0 +1,14 @@
+{
+    "name": "chivincent/youku-uploader",
+    "description": "Upload videos to youku by youku-apis.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vincent Chi",
+            "email": "song374561@chivincent.net"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
