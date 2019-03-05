@@ -10,7 +10,10 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {},
+    "require": {
+        "ext-json": "*",
+        "ext-curl": "*s"
+    },
     "autoload": {
         "psr-4": {
             "Chivincent\\Youku\\": "src"
