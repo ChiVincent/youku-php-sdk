@@ -2,6 +2,8 @@
 
 namespace Chivincent\Youku\Api;
 
+use Chivincent\Youku\Api\Response\RefreshToken;
+
 class Api
 {
     /**
@@ -16,9 +18,14 @@ class Api
      * @apiReturn string  refresh_token
      * @apiReturn string  token_type
      */
-    public function refreshToken()
+    public function refreshToken(): RefreshToken
     {
-
+        return RefreshToken::json(json_encode([
+            'access_token' => '',
+            'expires_in' => 0,
+            'refresh_token' => '',
+            'token_type' => '',
+        ]));
     }
 
     /**
