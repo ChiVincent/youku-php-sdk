@@ -3,6 +3,7 @@
 namespace Chivincent\Youku\Api;
 
 use Chivincent\Youku\Api\Response\Check;
+use Chivincent\Youku\Api\Response\Commit;
 use Chivincent\Youku\Api\Response\Create;
 use Chivincent\Youku\Api\Response\CreateFile;
 use Chivincent\Youku\Api\Response\NewSlice;
@@ -194,9 +195,11 @@ class Api
      * When Success:
      * @apiReturn string video_id
      */
-    public function commit()
+    public function commit(): Commit
     {
-
+        return Commit::json(json_encode([
+            'video_id' => 'XMjg1MTcyNDQ0',
+        ]));
     }
 
     /**
