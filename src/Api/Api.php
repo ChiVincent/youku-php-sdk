@@ -2,6 +2,7 @@
 
 namespace Chivincent\Youku\Api;
 
+use Chivincent\Youku\Api\Response\Create;
 use Chivincent\Youku\Api\Response\RefreshToken;
 
 class Api
@@ -50,9 +51,13 @@ class Api
      * @apiReturn string  video_id
      * @apiReturn string  upload_server_uri
      */
-    public function create()
+    public function create(): Create
     {
-
+        return Create::json(json_encode([
+            'upload_token' => '',
+            'video_id' => '',
+            'upload_server_uri' => '',
+        ]));
     }
 
     /**
