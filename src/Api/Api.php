@@ -6,6 +6,7 @@ use Chivincent\Youku\Api\Response\Create;
 use Chivincent\Youku\Api\Response\CreateFile;
 use Chivincent\Youku\Api\Response\NewSlice;
 use Chivincent\Youku\Api\Response\RefreshToken;
+use Chivincent\Youku\Api\Response\UploadSlice;
 
 class Api
 {
@@ -133,9 +134,15 @@ class Api
      * @apiReturn int64  transferred
      * @apiReturn bool   finished
      */
-    public function uploadSlice()
+    public function uploadSlice(): UploadSlice
     {
-
+        return UploadSlice::json(json_encode([
+            'slice_task_id' => 0,
+            'offset' => 0,
+            'length' => 0,
+            'transferred' => 0,
+            'finished' => true,
+        ]));
     }
 
     /**
