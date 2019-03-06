@@ -73,14 +73,16 @@ class Uploader
 
         do {
             $slice = $this->getCurrentSlice($interface->getUploadToken(), $ip);
+            $f = fopen($file, 'rb');
             $uploadedSlice = $this->uploadCurrentSlice(
-                stream_get_contents($f = fopen($file, 'rb'), $slice->getLength(), $slice->getOffset()),
+                stream_get_contents($f, $slice->getLength(), $slice->getOffset()),
                 $interface->getUploadToken(),
                 $slice->getSliceTaskId(),
                 $slice->getOffset(),
                 $slice->getLength(),
                 $ip
             );
+            fclose($f);
             $check = $this->checkUploaded($interface->getUploadToken(), $ip);
         } while ($uploadedSlice->isFinished() && $check->getStatus() === 4);
 
