@@ -13,6 +13,15 @@ use Chivincent\Youku\Api\Response\UploadSlice;
 
 class Api
 {
+    const REFRESH_TOKEN_URL = 'https://api.youku.com/oauth2/token.json';
+    const CREATE_URL = 'https://api.youku.com/uploads/create.json';
+    const CREATE_FILE_URL = 'http://%s/gupload/create_file';
+    const NEW_SLICE_URL = 'http://%s/gupload/new_slice';
+    const UPLOAD_SLICE_URL = 'http://%s/gupload/upload_slice';
+    const CHECK_URL = 'http://%s/gupload/check';
+    const COMMIT_URL = 'https://api.youku.com/uploads/commit.json';
+    const CANCEL_URL = 'https://api.youku.com/uploads/cancel.json';
+
     /**
      * @api      POST https://api.youku.com/oauth2/token.json
      *
