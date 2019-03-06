@@ -105,7 +105,7 @@ class Api
      * @param     string $fileMd5
      * @param     string $fileSize
      * @param     null|string $category = null
-     * @param     string $copyRightType = 'original'
+     * @param     string $copyrightType = 'original'
      * @param     string $publicType = 'all'
      * @param     null|string $watchPassword = null
      * @param     int    $isWeb = 0
@@ -123,7 +123,7 @@ class Api
         string $fileMd5,
         string $fileSize,
         ?string $category = null,
-        string $copyRightType = 'original',
+        string $copyrightType = 'original',
         string $publicType = 'all',
         ?string $watchPassword = null,
         int    $isWeb = 0,
@@ -138,7 +138,7 @@ class Api
             'file_name' => $fileName,
             'file_md5' => $fileMd5,
             'file_size' => $fileSize,
-            'copyright_type' => $copyRightType,
+            'copyright_type' => $copyrightType,
             'public_type' => $publicType,
             'isWeb' => $isWeb,
             'deshake' => $deshake,
