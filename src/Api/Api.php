@@ -26,10 +26,10 @@ class Api
     public function refreshToken(): RefreshToken
     {
         return RefreshToken::json(json_encode([
-            'access_token' => '',
-            'expires_in' => 0,
-            'refresh_token' => '',
-            'token_type' => '',
+            'access_token' => '11d0b7627154f0dd000e6084f3811598',
+            'expires_in' => 3600,
+            'refresh_token' => '4bda296b570a6bba6ff02944cf10d13f',
+            'token_type' => 'bearer',
         ]));
     }
 
@@ -58,9 +58,9 @@ class Api
     public function create(): Create
     {
         return Create::json(json_encode([
-            'upload_token' => '',
-            'video_id' => '',
-            'upload_server_uri' => '',
+            'upload_token' => '1a2b3c4d',
+            'video_id' => 'xxxxxx',
+            'upload_server_uri' => 'g01.upload.youku.com',
         ]));
     }
 
@@ -103,11 +103,11 @@ class Api
     public function newSlice(): NewSlice
     {
         return NewSlice::json(json_encode([
-            'slice_task_id' => 0,
-            'offset' => 0,
-            'length' => 0,
-            'transferred' => 0,
-            'finished' => true,
+            'slice_task_id' => 1328793281567,
+            'offset' => 12358023,
+            'length' => 12345,
+            'transferred' => 12358023,
+            'finished' => false,
         ]));
     }
 
@@ -138,11 +138,11 @@ class Api
     public function uploadSlice(): UploadSlice
     {
         return UploadSlice::json(json_encode([
-            'slice_task_id' => 0,
-            'offset' => 0,
-            'length' => 0,
-            'transferred' => 0,
-            'finished' => true,
+            'slice_task_id' => 1328793281567,
+            'offset' => 12358023,
+            'length' => 12345,
+            'transferred' => 12358023,
+            'finished' => false,
         ]));
     }
 
