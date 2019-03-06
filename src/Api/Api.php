@@ -2,19 +2,19 @@
 
 namespace Chivincent\Youku\Api;
 
-use Chivincent\Youku\Api\Response\Cancel;
+use GuzzleHttp\Client;
+use Psr\Http\Message\StreamInterface;
 use Chivincent\Youku\Api\Response\Check;
+use Chivincent\Youku\Api\Response\Error;
+use Chivincent\Youku\Api\Response\Cancel;
 use Chivincent\Youku\Api\Response\Commit;
 use Chivincent\Youku\Api\Response\Create;
-use Chivincent\Youku\Api\Response\CreateFile;
-use Chivincent\Youku\Api\Response\Error;
-use Chivincent\Youku\Api\Response\NewSlice;
-use Chivincent\Youku\Api\Response\RefreshToken;
-use Chivincent\Youku\Api\Response\UploadSlice;
-use Chivincent\Youku\Exception\UploadException;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use Psr\Http\Message\StreamInterface;
+use Chivincent\Youku\Api\Response\NewSlice;
+use Chivincent\Youku\Api\Response\CreateFile;
+use Chivincent\Youku\Api\Response\UploadSlice;
+use Chivincent\Youku\Api\Response\RefreshToken;
+use Chivincent\Youku\Exception\UploadException;
 
 class Api
 {
