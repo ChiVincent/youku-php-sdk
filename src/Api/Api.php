@@ -2,6 +2,7 @@
 
 namespace Chivincent\Youku\Api;
 
+use Chivincent\Youku\Api\Response\Check;
 use Chivincent\Youku\Api\Response\Create;
 use Chivincent\Youku\Api\Response\CreateFile;
 use Chivincent\Youku\Api\Response\NewSlice;
@@ -157,16 +158,23 @@ class Api
      * @apiReturn string description
      *
      * When Success:
-     * @apiReturn int    success
-     * @apiReturn int    transferred_percent
-     * @apiReturn int    confirmed_percent
-     * @apiReturn int    empty_tasks
-     * @apiReturn bool   finished
-     * @apiReturn string upload_server_ip
+     * @apiReturn int     status
+     * @apiReturn ?int    transferred_percent
+     * @apiReturn ?int    confirmed_percent
+     * @apiReturn ?int    empty_tasks
+     * @apiReturn bool    finished
+     * @apiReturn string  upload_server_ip
      */
-    public function check()
+    public function check(): Check
     {
-
+        return Check::json(json_encode([
+            'status' => 4,
+            'upload_server_ip' => '16.103.65.55',
+            'transferred_percent' => 0,
+            'confirmed_percent' => 0,
+            'empty_tasks' => 114,
+            'finished' => false,
+        ]));
     }
 
     /**
