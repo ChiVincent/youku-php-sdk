@@ -15,7 +15,7 @@ composer require chivincent/youku-uploader
 
 use Chivincent\Youku\Uploader;
 
-$file = '/tmp/test.mp4';
+$file = '/tmp/test.mp4';                // Must be full path.
 $clientId = 'this-is-your-client-id';
 $accessToken = 'this-is-your-access-token';
 
