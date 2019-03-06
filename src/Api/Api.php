@@ -25,7 +25,7 @@ class Api
      * @apiReturn string  refresh_token
      * @apiReturn string  token_type
      */
-    public function refreshToken(): RefreshToken
+    public function refreshToken(string $clientId, string $grantType, string $refreshToken): RefreshToken
     {
         return RefreshToken::json(json_encode([
             'access_token' => '11d0b7627154f0dd000e6084f3811598',
@@ -57,8 +57,22 @@ class Api
      * @apiReturn string  video_id
      * @apiReturn string  upload_server_uri
      */
-    public function create(): Create
-    {
+    public function create(
+        string $clientId,
+        string $accessToken,
+        string $title,
+        string $tags,
+        string $category,
+        string $description,
+        string $fileName,
+        string $fileMd5,
+        string $fileSize,
+        ?string $copyRight = 'original',
+        ?string $publicType = 'all',
+        ?string $watchPassword = '',
+        ?int    $isWeb = 0,
+        ?int    $deshake = 0
+    ): Create {
         return Create::json(json_encode([
             'upload_token' => '1a2b3c4d',
             'video_id' => 'xxxxxx',
@@ -79,7 +93,7 @@ class Api
      * @apiReturn string type
      * @apiReturn string description
      */
-    public function createFile(): CreateFile
+    public function createFile(string $uploadToken, int $fileSize, string $ext, ?int $sliceLength = 2048): CreateFile
     {
         return CreateFile::json('{}');
     }
@@ -102,7 +116,7 @@ class Api
      * @apiReturn int64  transferred
      * @apiReturn bool   finished
      */
-    public function newSlice(): NewSlice
+    public function newSlice(string $uploadToken): NewSlice
     {
         return NewSlice::json(json_encode([
             'slice_task_id' => 1328793281567,
@@ -137,8 +151,15 @@ class Api
      * @apiReturn int64  transferred
      * @apiReturn bool   finished
      */
-    public function uploadSlice(): UploadSlice
-    {
+    public function uploadSlice(
+        string $uploadToken,
+        string $sliceTaskId,
+        int    $offset,
+        int    $length,
+        string $data,
+        ?string $crc = '',
+        ?string $hash = ''
+    ): UploadSlice {
         return UploadSlice::json(json_encode([
             'slice_task_id' => 1328793281567,
             'offset' => 12358023,
@@ -167,7 +188,7 @@ class Api
      * @apiReturn bool    finished
      * @apiReturn string  upload_server_ip
      */
-    public function check(): Check
+    public function check(string $uploadToken): Check
     {
         return Check::json(json_encode([
             'status' => 4,
@@ -196,8 +217,12 @@ class Api
      * When Success:
      * @apiReturn string video_id
      */
-    public function commit(): Commit
-    {
+    public function commit(
+        string $accessToken,
+        string $clientId,
+        string $uploadToken,
+        ?string $uploadServerIp = ''
+    ): Commit {
         return Commit::json(json_encode([
             'video_id' => 'XMjg1MTcyNDQ0',
         ]));
@@ -220,8 +245,12 @@ class Api
      * When Success:
      * @apiReturn string upload_token
      */
-    public function cancel(): Cancel
-    {
+    public function cancel(
+        string $accessToken,
+        string $clientId,
+        string $uploadToken,
+        ?string $uploadServerIp = ''
+    ): Cancel {
         return Cancel::json(json_encode([
             'upload_token' => '1a2b3c4d',
         ]));
