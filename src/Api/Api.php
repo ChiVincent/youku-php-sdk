@@ -3,6 +3,7 @@
 namespace Chivincent\Youku\Api;
 
 use Chivincent\Youku\Api\Response\Create;
+use Chivincent\Youku\Api\Response\CreateFile;
 use Chivincent\Youku\Api\Response\RefreshToken;
 
 class Api
@@ -73,9 +74,9 @@ class Api
      * @apiReturn string type
      * @apiReturn string description
      */
-    public function createFile()
+    public function createFile(): CreateFile
     {
-
+        return CreateFile::json('{}');
     }
 
     /**
