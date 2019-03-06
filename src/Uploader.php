@@ -2,328 +2,168 @@
 
 namespace Chivincent\Youku;
 
-use stdClass;
-use Exception;
+use GuzzleHttp\Client;
+use Chivincent\Youku\Api\Api;
+use Chivincent\Youku\Api\Response\Check;
+use Chivincent\Youku\Api\Response\Create;
+use Chivincent\Youku\Api\Response\NewSlice;
+use Chivincent\Youku\Api\Response\UploadSlice;
+use Chivincent\Youku\Exception\UploadException;
 
 class Uploader
 {
-    const ACCESS_TOKEN_URL = 'https://api.youku.com/oauth2/token';
-    const UPLOAD_TOKEN_URL = 'https://api.youku.com/uploads/create.json';
-    const UPLOAD_COMMIT_URL = 'https://api.youku.com/uploads/commit.json';
-    const VERSION_UPDATE_URL = 'http://api.youku.com/sdk/version_update';
-    const REFRESH_FILE = 'refresh.txt';
+    /**
+     * @var Api
+     */
+    protected $api;
 
-    private $clientId;
-    private $clientSecret;
-    private $accessToken;
-    private $uploadToken;
-    private $uploadServerIp;
-    private $refreshToken;
+    /**
+     * @var string
+     */
+    protected $clientId;
 
-    public function __construct(string $clientId, string $clientSecret)
+    /**
+     * @var string
+     */
+    protected $accessToken;
+
+    /**
+     * Uploader constructor.
+     *
+     * @param string $clientId      The appkey from youku.com
+     * @param string $accessToken   The access token from youku.com
+     */
+    public function __construct(string $clientId, string $accessToken)
     {
         $this->clientId = $clientId;
-        $this->clientSecret = $clientSecret;
+        $this->accessToken = $accessToken;
+
+        $this->api = new Api(new Client());
     }
 
-    private function getUploadToken(array $uploadInfo): stdClass
+    /**
+     * Upload video.
+     *
+     * @param string $file      The path of file.
+     * @param array  $meta
+     * @param array  $configure
+     * @return string
+     * @throws UploadException
+     */
+    public function upload(string $file, array $meta = [], array $configure = []): string
     {
-        $basic = [
-            'client_id' => $this->clientId,
-            'access_token' => $this->accessToken,
-        ];
+        $interface = $this->createUploadInterface(
+            $file,
+            $meta['title'] ?? basename($file),
+            $meta['tags'] ?? [],
+            $meta['description'] ?? '',
+            $meta['category'] ?? null,
+            $meta['copyrightType'] ?? 'original',
+            $meta['publicType'] ?? 'all',
+            $meta['watchPassword'] ?? null,
+            $meta['deshake'] ?? 0
+        );
 
-        $params = array_merge($basic, $uploadInfo);
-        try {
-            $result = json_decode(Http::get(self::UPLOAD_TOKEN_URL, $params));
+        $this->createFile(
+            $file,
+            $interface->getUploadToken(),
+            $ip = gethostbyname($interface->getUploadServerUri()),
+            $configure['sliceLength'] ?? 2048
+        );
 
-            if (isset($result->error) && $result->error->code !== 1009) {
-                throw new UploadException($result->error->description, $result->error->code);
-            }
-
-            return $result;
-        } catch (UploadException $e) {
-            die($e->getError());
-        }
-    }
-
-    private function uploadCreate(string $fileName): stdClass
-    {
-        $fileSize = filesize($fileName);
-        $url = "http://$this->uploadServerIp/gupload/create_file";
-        $param = [
-            'upload_token' => $this->uploadToken,
-            'file_size' => $fileSize,
-            'slice_length' => 1024,
-            'ext' => $this->getFileExt($fileName),
-        ];
-
-        try {
-            $result = json_decode(Http::post($url, $param));
-
-            if (isset($result->error)) {
-                throw new UploadException($result->error->description, $result->error->code);
-            }
-
-            return $result;
-        } catch (UploadException $e) {
-            die($e->getError());
-        }
-    }
-
-    private function createSlice(): stdClass
-    {
-        $url = "http://$this->uploadServerIp/gupload/new_slice";
-        $param = [
-            'upload_token' => $this->uploadToken,
-        ];
-
-        try {
-            $result = json_decode(Http::get($url, $param));
-
-            if (isset($result->error)) {
-                throw new UploadException($result->error->description, $result->error->code);
-            }
-
-            return $result;
-        } catch (UploadException $e) {
-            die($e->getError());
-        }
-    }
-
-    private function uploadSlice(string $sliceTaskId, int $offset, int $length, string $fileName): stdClass
-    {
-        $url = "http://$this->uploadServerIp/gupload/upload_slice";
-        $data = $this->readVideoFile($fileName, $offset, $length);
-        $param = [
-            'upload_token' => $this->uploadToken,
-            'slice_task_id' => $sliceTaskId,
-            'offset' => $offset,
-            'length' => $length,
-            'crc' => dechex(crc32($data)),
-            'hash' => bin2hex(md5($data, true))
-        ];
-
-        try {
-            $result = Http::doPostRequest($url, $param, $data);
-
-            if (isset($result->error)) {
-                throw new UploadException($result->error->description, $result->error->code);
-            }
-
-            return $result;
-        } catch (UploadException $e) {
-            die($e->getError());
-        }
-    }
-
-    private function getFileExt(string $fileName): string
-    {
-        return pathinfo($fileName)['extension'];
-    }
-
-    private function readVideoFile(string $fileName, int $offset, int $length): string
-    {
-        try {
-            $handle = fopen($fileName, 'rb');
-            if (!$handle) {
-                throw new Exception('Could not open the file!');
-            }
-            $data = stream_get_contents($handle, $length, $offset);
-            fclose($handle);
-            return $data;
-        } catch (Exception $e) {
-            die("Error (Fiile: {$e->getFile()}, line: {$e->getLine()}): {$e->getMessage()}");
-        }
-    }
-
-    private function commit(string $uploadServerIp)
-    {
-        $param = [
-            'access_token' => $this->accessToken,
-            'client_id' => $this->clientId,
-            'upload_token' => $this->uploadToken,
-            'upload_server_ip' => $this->uploadServerIp,
-        ];
-
-        try {
-            $result = json_decode(Http::get(self::UPLOAD_COMMIT_URL, $param));
-
-            if (isset($result->error)) {
-                throw new UploadException($result->error->description, $result->error->code);
-            }
-
-            return $result;
-        } catch (UploadException $e) {
-            die($e->getError());
-        }
-    }
-
-    private function versionUpdate(string $verlog)
-    {
-        $file = fopen($verlog, 'r');
-
-        if (!$file) {
-            die("Could not open $verlog!");
-        }
-
-        $version = trim(fgets($file));
-        echo "Your current sdk version is: $version\n";
-        $param = [
-            'client_id' => $this->clientId,
-            'version' => $version,
-            'type' => 'php',
-        ];
-        Http::get(self::VERSION_UPDATE_URL, $param);
-        fclose($file);
-    }
-
-    private function check(): stdClass
-    {
-        $url = "http://{$this->uploadServerIp}/gupload/check";
-        $param = [
-            'upload_token' => $this->uploadToken,
-        ];
-
-        try {
-            $result = json_decode(Http::get($url, $param));
-
-            if (isset($result->error)) {
-                throw new UploadException($result->error->description, $result->error->code);
-            }
-
-            return $result;
-        } catch (UploadException $e) {
-            die($e->getError());
-        }
-    }
-
-    private function refreshToken()
-    {
-        $param = [
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-            'grant_type' => 'refresh_token',
-            'refresh_token' => $this->refreshToken,
-        ];
-
-        try {
-            $result = json_decode(Http::post(self::ACCESS_TOKEN_URL, $param));
-
-            if (isset($result->error)) {
-                throw new UploadException($result->error->description, $result->error->code);
-            }
-
-            return $result;
-        } catch (UploadException $e) {
-            die($e->getError());
-        }
-    }
-
-    private function readRefreshFile(string $refreshFile)
-    {
-        $file = fopen($refreshFile, 'r');
-        if ($file) {
-            $refreshInfo = json_decode(trim(fgets($file)));
-            $this->accessToken = $refreshInfo->access_token ?? '';
-            $this->refreshToken = $refreshInfo->refresh_token ?? '';
-            fclose($file);
-        }
-    }
-
-    private function writeRefreshFile(string $refreshFile,  $refreshJsonResult)
-    {
-        $file = fopen($refreshFile, 'w');
-        if (!$file) {
-            die("Could not open $refreshFile!");
-        }
-        $refreshInfo = json_encode($refreshJsonResult);
-        $fw = fwrite($file, $refreshInfo);
-        fclose($file);
-        if (!$fw) {
-            die("Write refresh file failed!");
-        }
-    }
-
-    public function upload(bool $uploadProcess = true, array $params = [], array $uploadInfo = [])
-    {
-        if (isset($params['access_token']) && !empty($params['access_token'])) {
-            $this->accessToken = $params['access_token'];
-            if (isset($params['refresh_token']) && !empty($params['refresh_token'])) {
-                $this->refreshToken = $params['refresh_token'];
-            }
-            $this->readRefreshFile(self::REFRESH_FILE);
-        } else {
-            echo 'Only applys to the client of partner level!';
-            $result = $this->getAccessToken($params);
-            if (isset($result->access_token)) {
-                $this->accessToken = $result->access_token;
-            }
-        }
-
-        $uploadResult = $this->getUploadToken($uploadInfo);
-
-        if (isset($uploadResult->error) && $uploadResult->error->code === 1009 && !empty($this->refreshToken)) {
-            $refreshResult = $this->refreshToken();
-            $this->accessToken = $refreshResult->access_token;
-            $this->refreshToken = $refreshResult->refresh_token;
-            $this->writeRefreshFile(self::REFRESH_FILE, $refreshResult);
-            $uploadResult = $this->getUploadToken($uploadInfo);
-        }
-
-        if (!isset($uploadResult->upload_token)) {
-            die('Canont get upload token by this access token and refresh token');
-        }
-
-        $this->uploadToken = $uploadResult->upload_token;
-        $fileName = $uploadInfo['file_name'];
-        $this->uploadServerIp = gethostbyname($uploadResult->upload_server_uri);
-        $uploadCreate = $this->uploadCreate($fileName);
-
-        echo "Start Uploading ...\n";
-        $finish = false;
-        $transferred = 0;
-
-        $uploadSlice = $this->createSlice();
-        $sliceId = $uploadSlice->slice_task_id;
-        $offset = $uploadSlice->offset;
-        $length = $uploadSlice->length;
-        $uploadServerIp = '';
         do {
-            $uploadSlice = $this->uploadSlice($sliceId, $offset, $length, $fileName);
-            $sliceId = $uploadSlice->slice_task_id;
-            $offset = $uploadSlice->offset;
-            $length = $uploadSlice->length;
-            $transferred = (int) round($uploadSlice->transferred / $uploadInfo['file_size'] * 100);
+            $slice = $this->getCurrentSlice($interface->getUploadToken(), $ip);
+            $f = fopen($file, 'rb');
+            $uploadedSlice = $this->uploadCurrentSlice(
+                stream_get_contents($f, $slice->getLength(), $slice->getOffset()),
+                $interface->getUploadToken(),
+                $slice->getSliceTaskId(),
+                $slice->getOffset(),
+                $slice->getLength(),
+                $ip
+            );
+            fclose($f);
+            $check = $this->checkUploaded($interface->getUploadToken(), $ip);
+        } while ($uploadedSlice->isFinished() && $check->getStatus() === 4);
 
-            if ($sliceId === 0) {
-                do {
-                    $checkResult = $this->check();
-                    if (isset($checkResult->status)) {
-                        $finish = $checkResult->finished;
-                        if ($checkResult->status === 1) {
-                            $uploadServerIp = $checkResult->upload_server_ip;
-                            $transferred = 100;
-                            break;
-                        } else if ($checkResult->status === 2 || $checkResult->status === 3) {
-                            $transferred = $checkResult->confirmed_percent;
-                        }
-                    }
-                } while(1);
+        do {
+            $check = $this->checkUploaded($interface->getUploadToken(), $ip);
+
+            if ($check->getStatus() === 2 || $check->getStatus() === 3) {
+                sleep($configure['checkWaiting'] ?? 60);
             }
 
-            if ($uploadProcess) {
-                echo "Upload progress: {$transferred}%\n";
-            }
-        } while(!$finish);
+        } while($check->isFinished());
 
-        if ($finish) {
-            $commitResult = $this->commit($uploadServerIp);
-            echo "Uploading success!\n";
-            if (isset($commitResult->video_id)) {
-                echo "videoid: {$commitResult->video_id}\n";
-            }
-        }
+        return $this->api
+            ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp())
+            ->getVideoId();
+    }
 
+    protected function createUploadInterface(
+        string $file,
+        string $title,
+        array $tags,
+        string $description,
+        string $category = null,
+        string $copyrightType = 'original',
+        string $publicType = 'all',
+        ?string $watchPassword = null,
+        int $deshake = 0
+    ): Create {
+        return $this->api->create(
+            $this->clientId,
+            $this->accessToken,
+            $title,
+            implode(',', $tags),
+            $description,
+            basename($file),
+            md5_file($file),
+            filesize($file),
+            $category,
+            $copyrightType,
+            $publicType,
+            $watchPassword,
+            0,
+            $deshake
+        );
+    }
+
+    protected function createFile(string $file, string $uploadToken, string $ip, int $sliceLength = 2048)
+    {
+        $this->api->createFile(
+            $ip,
+            $uploadToken,
+            filesize($file),
+            pathinfo($file, PATHINFO_EXTENSION),
+            $sliceLength
+        );
+    }
+
+    protected function getCurrentSlice(string $uploadToken, string $ip): NewSlice
+    {
+        return $this->api->newSlice(
+            $ip,
+            $uploadToken
+        );
+    }
+
+    protected function uploadCurrentSlice(string $binary, string $uploadToken, string $sliceTaskId, int $offset, int $length, string $ip): UploadSlice
+    {
+        return $this->api->uploadSlice(
+            $ip,
+            $uploadToken,
+            $sliceTaskId,
+            $offset,
+            $length,
+            $binary,
+            dechex(crc32($binary)),
+            bin2hex(md5($binary, true))
+        );
+    }
+
+    protected function checkUploaded(string $uploadToken, string $ip): Check
+    {
+        return $this->api->check($ip, $uploadToken);
     }
 }
