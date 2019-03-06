@@ -7,10 +7,13 @@ use Chivincent\Youku\Api\Response\Check;
 use Chivincent\Youku\Api\Response\Commit;
 use Chivincent\Youku\Api\Response\Create;
 use Chivincent\Youku\Api\Response\CreateFile;
+use Chivincent\Youku\Api\Response\Error;
 use Chivincent\Youku\Api\Response\NewSlice;
 use Chivincent\Youku\Api\Response\RefreshToken;
 use Chivincent\Youku\Api\Response\UploadSlice;
+use Chivincent\Youku\Exception\UploadException;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\StreamInterface;
 
 class Api
@@ -50,18 +53,25 @@ class Api
      * @param     string $grantType
      * @param     string $refreshToken
      * @return    RefreshToken
+     * @throws    UploadException
      */
     public function refreshToken(string $clientId, string $grantType, string $refreshToken): RefreshToken
     {
-        $response = $this->client->post(self::REFRESH_TOKEN_URL, [
-            'form_params' => [
-                'client_id' => $clientId,
-                'grant_type' => $grantType,
-                'refresh_token' => $refreshToken,
-            ],
-        ]);
+        try {
+            $response = $this->client->post(self::REFRESH_TOKEN_URL, [
+                'form_params' => [
+                    'client_id' => $clientId,
+                    'grant_type' => $grantType,
+                    'refresh_token' => $refreshToken,
+                ],
+            ]);
 
-        return RefreshToken::json($response->getBody()->getContents());
+            return RefreshToken::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+             throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
     }
 
     /**
@@ -101,6 +111,7 @@ class Api
      * @param     int    $isWeb = 0
      * @param     int    $deshake = 0
      * @return    Create
+     * @throws    UploadException
      */
     public function create(
         string $clientId,
@@ -141,11 +152,17 @@ class Api
             $queries['category'] = $category;
         }
 
-        $response = $this->client->get(self::CREATE_URL, [
-            'query' => $queries,
-        ]);
+        try {
+            $response = $this->client->get(self::CREATE_URL, [
+                'query' => $queries,
+            ]);
 
-        return Create::json($response->getBody()->getContents());
+            return Create::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
     }
 
     /**
@@ -167,19 +184,26 @@ class Api
      * @param     string $ext
      * @param     int    $sliceLength = 2048
      * @return    CreateFile
+     * @throws    UploadException
      */
     public function createFile(string $ip, string $uploadToken, int $fileSize, string $ext, int $sliceLength = 2048): CreateFile
     {
-        $response = $this->client->post(sprintf(self::CREATE_FILE_URL, $ip), [
-            'form_params' => [
-                'upload_token' => $uploadToken,
-                'file_size' => $fileSize,
-                'ext' => $ext,
-                'slice_length' => $sliceLength,
-            ],
-        ]);
+        try {
+            $response = $this->client->post(sprintf(self::CREATE_FILE_URL, $ip), [
+                'form_params' => [
+                    'upload_token' => $uploadToken,
+                    'file_size' => $fileSize,
+                    'ext' => $ext,
+                    'slice_length' => $sliceLength,
+                ],
+            ]);
 
-        return CreateFile::json($response->getBody()->getContents());
+            return CreateFile::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
     }
 
     /**
@@ -203,16 +227,23 @@ class Api
      * @param     string $ip
      * @param     string $uploadToken
      * @return    NewSlice
+     * @throws    UploadException
      */
     public function newSlice(string $ip, string $uploadToken): NewSlice
     {
-        $response = $this->client->get(sprintf(self::NEW_SLICE_URL, $ip), [
-            'query' => [
-                'upload_token' => $uploadToken,
-            ],
-        ]);
+        try {
+            $response = $this->client->get(sprintf(self::NEW_SLICE_URL, $ip), [
+                'query' => [
+                    'upload_token' => $uploadToken,
+                ],
+            ]);
 
-        return NewSlice::json($response->getBody()->getContents());
+            return NewSlice::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
     }
 
     /**
@@ -248,6 +279,7 @@ class Api
      * @param     null|string $crc
      * @param     null|string $hash
      * @return    UploadSlice
+     * @throws    UploadException
      */
     public function uploadSlice(
         string $ip,
@@ -259,19 +291,25 @@ class Api
         string $crc = '',
         string $hash = ''
     ): UploadSlice {
-        $response = $this->client->post(sprintf(self::UPLOAD_SLICE_URL, $ip), [
-            'query' => [
-                'upload_token' => $uploadToken,
-                'slice_task_id' => $sliceTaskId,
-                'offset' => $offset,
-                'length' => $length,
-                'crc' => $crc,
-                'hash' => $hash,
-            ],
-            'body' => $data,
-        ]);
+        try {
+            $response = $this->client->post(sprintf(self::UPLOAD_SLICE_URL, $ip), [
+                'query' => [
+                    'upload_token' => $uploadToken,
+                    'slice_task_id' => $sliceTaskId,
+                    'offset' => $offset,
+                    'length' => $length,
+                    'crc' => $crc,
+                    'hash' => $hash,
+                ],
+                'body' => $data,
+            ]);
 
-        return UploadSlice::json($response->getBody()->getContents());
+            return UploadSlice::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
     }
 
     /**
@@ -296,16 +334,23 @@ class Api
      * @param     string $ip
      * @param     string $uploadToken
      * @return    Check
+     * @throws    UploadException
      */
     public function check(string $ip, string $uploadToken): Check
     {
-        $response = $this->client->get(sprintf(self::CHECK_URL, $ip), [
-            'query' => [
-                'upload_token' => $uploadToken,
-            ],
-        ]);
+        try {
+            $response = $this->client->get(sprintf(self::CHECK_URL, $ip), [
+                'query' => [
+                    'upload_token' => $uploadToken,
+                ],
+            ]);
 
-        return Check::json($response->getBody()->getContents());
+            return Check::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
     }
 
     /**
@@ -330,6 +375,7 @@ class Api
      * @param     string $uploadToken
      * @param     string $uploadServerIp = ''
      * @return    Commit
+     * @throws    UploadException
      */
     public function commit(
         string $accessToken,
@@ -337,16 +383,22 @@ class Api
         string $uploadToken,
         string $uploadServerIp = ''
     ): Commit {
-        $response = $this->client->post(self::COMMIT_URL, [
-            'form_params' => [
-                'access_token' => $accessToken,
-                'client_id' => $clientId,
-                'upload_token' => $uploadToken,
-                'upload_server_ip' => $uploadServerIp,
-            ],
-        ]);
+        try {
+            $response = $this->client->post(self::COMMIT_URL, [
+                'form_params' => [
+                    'access_token' => $accessToken,
+                    'client_id' => $clientId,
+                    'upload_token' => $uploadToken,
+                    'upload_server_ip' => $uploadServerIp,
+                ],
+            ]);
 
-        return Commit::json($response->getBody()->getContents());
+            return Commit::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
     }
 
     /**
@@ -371,6 +423,7 @@ class Api
      * @param     string $uploadToken
      * @param     string $uploadServerIp = ''
      * @return    Cancel
+     * @throws    UploadException
      */
     public function cancel(
         string $accessToken,
@@ -378,15 +431,21 @@ class Api
         string $uploadToken,
         string $uploadServerIp = ''
     ): Cancel {
-        $response = $this->client->get(self::CANCEL_URL, [
-            'query' => [
-                'access_token' => $accessToken,
-                'client_id' => $clientId,
-                'upload_token' => $uploadToken,
-                'upload_server_ip' => $uploadServerIp,
-            ],
-        ]);
+        try {
+            $response = $this->client->get(self::CANCEL_URL, [
+                'query' => [
+                    'access_token' => $accessToken,
+                    'client_id' => $clientId,
+                    'upload_token' => $uploadToken,
+                    'upload_server_ip' => $uploadServerIp,
+                ],
+            ]);
 
-        return Cancel::json($response->getBody()->getContents());
+            return Cancel::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
     }
 }
