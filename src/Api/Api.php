@@ -2,6 +2,7 @@
 
 namespace Chivincent\Youku\Api;
 
+use Chivincent\Youku\Api\Response\Cancel;
 use Chivincent\Youku\Api\Response\Check;
 use Chivincent\Youku\Api\Response\Commit;
 use Chivincent\Youku\Api\Response\Create;
@@ -219,8 +220,10 @@ class Api
      * When Success:
      * @apiReturn string upload_token
      */
-    public function cancel()
+    public function cancel(): Cancel
     {
-
+        return Cancel::json(json_encode([
+            'upload_token' => '1a2b3c4d',
+        ]));
     }
 }
