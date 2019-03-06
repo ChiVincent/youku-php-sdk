@@ -1,4 +1,4 @@
-#PHP Youku SDK
+# PHP Youku SDK
 
 The youku.com php sdk.
 
@@ -15,21 +15,22 @@ composer require chivincent/youku-uploader
 
 use Chivincent\Youku\Uploader;
 
-$file = 'test.mp4';
-$uploader = new Uploader($clientId, $clientSecret);
+$file = '/tmp/test.mp4';
+$clientId = 'this-is-your-client-id';
+$accessToken = 'this-is-your-access-token';
 
-$params = [];
-// $params['access_token'] = '';
-// $params['refresh_token'] = '';
+$meta = [];
+// $meta['title'] = basename($file);    // The video title. strlen($title) should between 2 and 50.
+// $meta['tags'] = [];                  // The video tags. count($meta['tags']) should <= 10, and each tag strlen($tag) should >= 2 and <= 12
+// $meta['description'] = '';           // The video description. strlen($description) should < 2000
+// $meta['category'] = null;            // The video category.
+// $meta['copyrightType'] = 'original'; // "original" or "reproduced"
+// $meta['publicType'] = 'all';         // "all", "friend" or "password"
+// $meta['watchPassword'] = null;       // if publicType is "password, this is required.
+// $meta['deshake'] = 0;                // If use the de-shake process, it is 1.  
+$configure = [];
+// $configure['checkWaiting'] = 60; // Check every 60 seconds if it can be committed.
 
-$uploadInfo = [
-    'title' => 'php sdk test', // video title,
-    'tags' => 'test', // tags, split by spaces.
-    'file_name' => $file,
-    'file_md5' => md5_file($file),
-    'file_size' => filesize($file),
-];
-
-$progress = true; // if true, show the uploading progress
-$uploader->upload($progress, $params, $uploadInfo);
+$uploader = new Uploader($clientId, $accessToken);
+$uploader->upload($file, $meta, $configure);
 ```
