@@ -10,6 +10,8 @@ use Chivincent\Youku\Api\Response\CreateFile;
 use Chivincent\Youku\Api\Response\NewSlice;
 use Chivincent\Youku\Api\Response\RefreshToken;
 use Chivincent\Youku\Api\Response\UploadSlice;
+use GuzzleHttp\Client;
+use Psr\Http\Message\StreamInterface;
 
 class Api
 {
@@ -23,6 +25,16 @@ class Api
     const CANCEL_URL = 'https://api.youku.com/uploads/cancel.json';
 
     /**
+     * @var Client
+     */
+    protected $client;
+
+    public function __construct(Client $client)
+    {
+        $this->client = $client;
+    }
+
+    /**
      * @api      POST https://api.youku.com/oauth2/token.json
      *
      * @apiParam string   client_id
@@ -33,15 +45,23 @@ class Api
      * @apiReturn int     expires_in
      * @apiReturn string  refresh_token
      * @apiReturn string  token_type
+     *
+     * @param     string $clientId
+     * @param     string $grantType
+     * @param     string $refreshToken
+     * @return    RefreshToken
      */
     public function refreshToken(string $clientId, string $grantType, string $refreshToken): RefreshToken
     {
-        return RefreshToken::json(json_encode([
-            'access_token' => '11d0b7627154f0dd000e6084f3811598',
-            'expires_in' => 3600,
-            'refresh_token' => '4bda296b570a6bba6ff02944cf10d13f',
-            'token_type' => 'bearer',
-        ]));
+        $response = $this->client->post(self::REFRESH_TOKEN_URL, [
+            'form_params' => [
+                'client_id' => $clientId,
+                'grant_type' => $grantType,
+                'refresh_token' => $refreshToken,
+            ],
+        ]);
+
+        return RefreshToken::json($response->getBody()->getContents());
     }
 
     /**
@@ -51,7 +71,7 @@ class Api
      * @apiParam string   access_token
      * @apiParam string   title
      * @apiParam string   tags
-     * @apiParam string   category
+     * @apiParam ?string  category
      * @apiParam ?string  copyright_type=original
      * @apiParam ?string  public_type=all
      * @apiParam ?string  watch_password
@@ -65,28 +85,67 @@ class Api
      * @apiReturn string  upload_token
      * @apiReturn string  video_id
      * @apiReturn string  upload_server_uri
+     *
+     * @param     string $clientId
+     * @param     string $accessToken
+     * @param     string $title
+     * @param     string $tags
+     * @param     string $description
+     * @param     string $fileName
+     * @param     string $fileMd5
+     * @param     string $fileSize
+     * @param     null|string $category = null
+     * @param     string $copyRightType = 'original'
+     * @param     string $publicType = 'all'
+     * @param     null|string $watchPassword = null
+     * @param     int    $isWeb = 0
+     * @param     int    $deshake = 0
+     * @return    Create
      */
     public function create(
         string $clientId,
         string $accessToken,
         string $title,
         string $tags,
-        string $category,
         string $description,
         string $fileName,
         string $fileMd5,
         string $fileSize,
-        ?string $copyRight = 'original',
-        ?string $publicType = 'all',
-        ?string $watchPassword = '',
-        ?int    $isWeb = 0,
-        ?int    $deshake = 0
+        ?string $category = null,
+        string $copyRightType = 'original',
+        string $publicType = 'all',
+        ?string $watchPassword = null,
+        int    $isWeb = 0,
+        int    $deshake = 0
     ): Create {
-        return Create::json(json_encode([
-            'upload_token' => '1a2b3c4d',
-            'video_id' => 'xxxxxx',
-            'upload_server_uri' => 'g01.upload.youku.com',
-        ]));
+        $queries = [
+            'client_id' => $clientId,
+            'access_token' => $accessToken,
+            'title' => $title,
+            'tags' => $tags,
+            'description' => $description,
+            'file_name' => $fileName,
+            'file_md5' => $fileMd5,
+            'file_size' => $fileSize,
+            'copyright_type' => $copyRightType,
+            'public_type' => $publicType,
+            'isWeb' => $isWeb,
+            'deshake' => $deshake,
+        ];
+
+        if ($watchPassword) {
+            $queries['watch_password'] = $watchPassword;
+        }
+
+        if ($category) {
+            $queries['category'] = $category;
+        }
+
+        $response = $this->client->get(self::CREATE_URL, [
+            'query' => $queries,
+        ]);
+
+        return Create::json($response->getBody()->getContents());
     }
 
     /**
@@ -95,16 +154,32 @@ class Api
      * @apiParam string upload_token
      * @apiParam int    file_size
      * @apiParam string ext
-     * @apiParam ?int   slice_length=2048
+     * @apiParam int   slice_length=2048
      *
      * @apiReturn object error
      * @apiReturn int    code
      * @apiReturn string type
      * @apiReturn string description
+     *
+     * @param     string $ip
+     * @param     string $uploadToken
+     * @param     int    $fileSize
+     * @param     string $ext
+     * @param     int    $sliceLength = 2048
+     * @return    CreateFile
      */
-    public function createFile(string $uploadToken, int $fileSize, string $ext, ?int $sliceLength = 2048): CreateFile
+    public function createFile(string $ip, string $uploadToken, int $fileSize, string $ext, int $sliceLength = 2048): CreateFile
     {
-        return CreateFile::json('{}');
+        $response = $this->client->post(sprintf(self::CREATE_FILE_URL, $ip), [
+            'form_params' => [
+                'upload_token' => $uploadToken,
+                'file_size' => $fileSize,
+                'ext' => $ext,
+                'slice_length' => $sliceLength,
+            ],
+        ]);
+
+        return CreateFile::json($response->getBody()->getContents());
     }
 
     /**
@@ -124,16 +199,20 @@ class Api
      * @apiReturn int    length
      * @apiReturn int64  transferred
      * @apiReturn bool   finished
+     *
+     * @param     string $ip
+     * @param     string $uploadToken
+     * @return    NewSlice
      */
-    public function newSlice(string $uploadToken): NewSlice
+    public function newSlice(string $ip, string $uploadToken): NewSlice
     {
-        return NewSlice::json(json_encode([
-            'slice_task_id' => 1328793281567,
-            'offset' => 12358023,
-            'length' => 12345,
-            'transferred' => 12358023,
-            'finished' => false,
-        ]));
+        $response = $this->client->get(sprintf(self::NEW_SLICE_URL, $ip), [
+            'query' => [
+                'upload_token' => $uploadToken,
+            ],
+        ]);
+
+        return NewSlice::json($response->getBody()->getContents());
     }
 
     /**
@@ -159,23 +238,40 @@ class Api
      * @apiReturn int    length
      * @apiReturn int64  transferred
      * @apiReturn bool   finished
+     *
+     * @param     string $ip
+     * @param     string $uploadToken
+     * @param     string $sliceTaskId
+     * @param     int    $offset
+     * @param     int    $length
+     * @param     string|resource|StreamInterface $data
+     * @param     null|string $crc
+     * @param     null|string $hash
+     * @return    UploadSlice
      */
     public function uploadSlice(
+        string $ip,
         string $uploadToken,
         string $sliceTaskId,
         int    $offset,
         int    $length,
-        string $data,
-        ?string $crc = '',
-        ?string $hash = ''
+        $data,
+        string $crc = '',
+        string $hash = ''
     ): UploadSlice {
-        return UploadSlice::json(json_encode([
-            'slice_task_id' => 1328793281567,
-            'offset' => 12358023,
-            'length' => 12345,
-            'transferred' => 12358023,
-            'finished' => false,
-        ]));
+        $response = $this->client->post(sprintf(self::UPLOAD_SLICE_URL, $ip), [
+            'query' => [
+                'upload_token' => $uploadToken,
+                'slice_task_id' => $sliceTaskId,
+                'offset' => $offset,
+                'length' => $length,
+                'crc' => $crc,
+                'hash' => $hash,
+            ],
+            'body' => $data,
+        ]);
+
+        return UploadSlice::json($response->getBody()->getContents());
     }
 
     /**
@@ -196,17 +292,20 @@ class Api
      * @apiReturn ?int    empty_tasks
      * @apiReturn bool    finished
      * @apiReturn string  upload_server_ip
+     *
+     * @param     string $ip
+     * @param     string $uploadToken
+     * @return    Check
      */
-    public function check(string $uploadToken): Check
+    public function check(string $ip, string $uploadToken): Check
     {
-        return Check::json(json_encode([
-            'status' => 4,
-            'upload_server_ip' => '16.103.65.55',
-            'transferred_percent' => 0,
-            'confirmed_percent' => 0,
-            'empty_tasks' => 114,
-            'finished' => false,
-        ]));
+        $response = $this->client->get(sprintf(self::CHECK_URL, $ip), [
+            'query' => [
+                'upload_token' => $uploadToken,
+            ],
+        ]);
+
+        return Check::json($response->getBody()->getContents());
     }
 
     /**
@@ -225,16 +324,29 @@ class Api
      *
      * When Success:
      * @apiReturn string video_id
+     *
+     * @param     string $accessToken
+     * @param     string $clientId
+     * @param     string $uploadToken
+     * @param     string $uploadServerIp = ''
+     * @return    Commit
      */
     public function commit(
         string $accessToken,
         string $clientId,
         string $uploadToken,
-        ?string $uploadServerIp = ''
+        string $uploadServerIp = ''
     ): Commit {
-        return Commit::json(json_encode([
-            'video_id' => 'XMjg1MTcyNDQ0',
-        ]));
+        $response = $this->client->post(self::COMMIT_URL, [
+            'form_params' => [
+                'access_token' => $accessToken,
+                'client_id' => $clientId,
+                'upload_token' => $uploadToken,
+                'upload_server_ip' => $uploadServerIp,
+            ],
+        ]);
+
+        return Commit::json($response->getBody()->getContents());
     }
 
     /**
@@ -253,15 +365,28 @@ class Api
      *
      * When Success:
      * @apiReturn string upload_token
+     *
+     * @param     string $accessToken
+     * @param     string $clientId
+     * @param     string $uploadToken
+     * @param     string $uploadServerIp = ''
+     * @return    Cancel
      */
     public function cancel(
         string $accessToken,
         string $clientId,
         string $uploadToken,
-        ?string $uploadServerIp = ''
+        string $uploadServerIp = ''
     ): Cancel {
-        return Cancel::json(json_encode([
-            'upload_token' => '1a2b3c4d',
-        ]));
+        $response = $this->client->get(self::CANCEL_URL, [
+            'query' => [
+                'access_token' => $accessToken,
+                'client_id' => $clientId,
+                'upload_token' => $uploadToken,
+                'upload_server_ip' => $uploadServerIp,
+            ],
+        ]);
+
+        return Cancel::json($response->getBody()->getContents());
     }
 }
