@@ -10,17 +10,17 @@ class Check
     private $status;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $transferredPercent;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $confirmedPercent;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $emptyTasks;
 
@@ -77,25 +77,25 @@ class Check
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getTransferredPercent(): int
+    public function getTransferredPercent(): ?int
     {
         return $this->transferredPercent;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getConfirmedPercent(): int
+    public function getConfirmedPercent(): ?int
     {
         return $this->confirmedPercent;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getEmptyTasks(): int
+    public function getEmptyTasks(): ?int
     {
         return $this->emptyTasks;
     }

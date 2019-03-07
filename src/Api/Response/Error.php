@@ -7,11 +7,6 @@ use stdClass;
 class Error
 {
     /**
-     * @var stdClass
-     */
-    private $error;
-
-    /**
      * @var int
      */
     private $code;
@@ -30,38 +25,32 @@ class Error
     {
         $response = json_decode($json);
 
+        if (!property_exists($response, 'error')) {
+            return null;
+        }
+
         $properties = [
-            'error', 'code', 'type', 'description',
+            'code' , 'type', 'description',
         ];
 
         foreach ($properties as $property) {
-            if (!property_exists($response, $property)) {
+            if (!property_exists($response->error, $property)) {
                 return null;
             }
         }
 
         return new Error(
-            $response->error,
-            $response->code,
-            $response->type,
-            $response->description,
+            $response->error->code,
+            $response->error->type,
+            $response->error->description
         );
     }
 
-    public function __construct(stdClass $error, int $code, string $type, string $description)
+    public function __construct(int $code, string $type, string $description)
     {
-        $this->error = $error;
         $this->code = $code;
         $this->type = $type;
         $this->description = $description;
-    }
-
-    /**
-     * @return stdClass
-     */
-    public function getError(): stdClass
-    {
-        return $this->error;
     }
 
     /**

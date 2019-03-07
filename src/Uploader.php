@@ -84,7 +84,7 @@ class Uploader
             );
             fclose($f);
             $check = $this->checkUploaded($interface->getUploadToken(), $ip);
-        } while ($uploadedSlice->isFinished() && $check->getStatus() === 4);
+        } while ($uploadedSlice->isFinished() || $check->getStatus() === 4);
 
         do {
             $check = $this->checkUploaded($interface->getUploadToken(), $ip);
@@ -93,7 +93,7 @@ class Uploader
                 sleep($configure['checkWaiting'] ?? 60);
             }
 
-        } while($check->isFinished());
+        } while($check->isFinished() || $check->getStatus() === 1);
 
         return $this->api
             ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp())
