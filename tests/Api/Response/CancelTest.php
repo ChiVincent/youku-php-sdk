@@ -33,11 +33,4 @@ class CancelTest extends TestCase
         $this->assertInstanceOf(Cancel::class, $cancel);
         $this->assertSame('1a2b3c4d', $cancel->getUploadToken());
     }
-
-    public function testGetUploadToken()
-    {
-        $cancel = new Cancel('1a2b3c4d');
-
-        $this->assertSame('1a2b3c4d', $cancel->getUploadToken());
-    }
 }
