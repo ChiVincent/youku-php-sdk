@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace Tests\Api\Response;
 
 use Chivincent\Youku\Api\Response\Cancel;
 use PHPUnit\Framework\TestCase;
