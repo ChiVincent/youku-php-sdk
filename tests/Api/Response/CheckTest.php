@@ -24,7 +24,7 @@ class CheckTest extends TestCase
         $this->assertSame(0, $check->getTransferredPercent());
         $this->assertSame(0, $check->getConfirmedPercent());
         $this->assertSame(114, $check->getEmptyTasks());
-        $this->assertSame(false, $check->isFinished());
+        $this->assertFalse($check->isFinished());
     }
 
     public function testJsonBuildFailed()
@@ -46,7 +46,7 @@ class CheckTest extends TestCase
         $this->assertSame(0, $check->getTransferredPercent());
         $this->assertSame(0, $check->getConfirmedPercent());
         $this->assertSame(114, $check->getEmptyTasks());
-        $this->assertSame(false, $check->isFinished());
+        $this->assertFalse($check->isFinished());
     }
 
     public function testConstructorByOptionalValues()
@@ -59,6 +59,6 @@ class CheckTest extends TestCase
         $this->assertSame(null, $check->getTransferredPercent());
         $this->assertSame(null, $check->getConfirmedPercent());
         $this->assertSame(null, $check->getEmptyTasks());
-        $this->assertSame(false, $check->isFinished());
+        $this->assertFalse($check->isFinished());
     }
 }
