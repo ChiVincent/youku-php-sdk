@@ -40,7 +40,7 @@ class RefreshToken
 
         return new RefreshToken(
             $response->access_token,
-            $response->exires_in,
+            $response->expires_in,
             $response->refresh_token,
             $response->token_type
         );
