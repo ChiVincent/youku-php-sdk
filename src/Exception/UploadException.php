@@ -12,6 +12,6 @@ class UploadException extends Exception
     {
         $error === null
             ? parent::__construct('Empty Response', 0, $previous)
-            : parent::__construct($error->getDescription(), $error->getCode(), $previous);
+            : parent::__construct("{$error->getType()}: {$error->getDescription()}", $error->getCode(), $previous);
     }
 }
