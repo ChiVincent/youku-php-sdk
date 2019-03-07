@@ -1,5 +1,7 @@
 # PHP Youku SDK
 
+[![Build Status](https://travis-ci.com/ChiVincent/youku-uploader.svg?branch=master)](https://travis-ci.com/ChiVincent/youku-uploader)
+
 The youku.com php sdk.
 
 ## Installation
