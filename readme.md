@@ -1,6 +1,12 @@
 # PHP Youku SDK
 
+[![Build Status](https://travis-ci.com/ChiVincent/youku-uploader.svg?branch=master)](https://travis-ci.com/ChiVincent/youku-uploader)
+
 The youku.com php sdk.
+
+**Important: This is not official php sdk by youku.com, please check [开发文档 - 优酷视频云](https://cloud.youku.com/docs) for more information**
+
+This sdk is in development, please **DO NOT** using in the production.
 
 ## Installation
 
