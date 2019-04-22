@@ -2,7 +2,7 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-abstract class Slice
+abstract class Slice extends BaseResponse
 {
     /**
      * @var int
@@ -29,6 +29,15 @@ abstract class Slice
      */
     protected $finished;
 
+    /**
+     * Slice constructor.
+     *
+     * @param int $sliceTaskId
+     * @param int $offset
+     * @param int $length
+     * @param int $transferred
+     * @param bool $finished
+     */
     public function __construct(int $sliceTaskId, int $offset, int $length, int $transferred, bool $finished)
     {
         $this->sliceTaskId = $sliceTaskId;

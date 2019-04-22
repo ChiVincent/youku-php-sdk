@@ -32,6 +32,11 @@ class Api
      */
     protected $client;
 
+    /**
+     * Api constructor.
+     *
+     * @param Client $client
+     */
     public function __construct(Client $client)
     {
         $this->client = $client;

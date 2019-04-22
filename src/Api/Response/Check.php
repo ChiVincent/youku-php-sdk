@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class Check
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class Check extends BaseResponse implements JsonResponse
 {
     /**
      * @var int
@@ -34,7 +36,13 @@ class Check
      */
     private $uploadServerIp;
 
-    public static function json(string $json): ?Check
+    /**
+     * Make Check Response by json.
+     *
+     * @param string $json
+     * @return Check|null
+     */
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 
@@ -48,7 +56,7 @@ class Check
             }
         }
 
-        return new Check(
+        return new self(
             $response->status,
             $response->transferred_percent,
             $response->confirmed_percent,
@@ -58,6 +66,16 @@ class Check
         );
     }
 
+    /**
+     * Check constructor.
+     *
+     * @param int $status
+     * @param int|null $transferredPercent
+     * @param int|null $confirmedPercent
+     * @param int|null $emptyTasks
+     * @param bool $finished
+     * @param string $uploadServerIp
+     */
     public function __construct(int $status, ?int $transferredPercent, ?int $confirmedPercent, ?int $emptyTasks, bool $finished, string $uploadServerIp)
     {
         $this->status = $status;

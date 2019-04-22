@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class RefreshToken
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class RefreshToken extends BaseResponse implements JsonResponse
 {
     /**
      * @var string
@@ -24,7 +26,13 @@ class RefreshToken
      */
     private $tokenType;
 
-    public static function json(string $json): ?RefreshToken
+    /**
+     * Make RefreshToken Response by json.
+     *
+     * @param string $json
+     * @return RefreshToken|null
+     */
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 
@@ -38,7 +46,7 @@ class RefreshToken
             }
         }
 
-        return new RefreshToken(
+        return new self(
             $response->access_token,
             $response->expires_in,
             $response->refresh_token,
@@ -46,6 +54,14 @@ class RefreshToken
         );
     }
 
+    /**
+     * RefreshToken constructor.
+     *
+     * @param string $accessToken
+     * @param int $expiresIn
+     * @param string $refreshToken
+     * @param string $tokenType
+     */
     public function __construct(string $accessToken, int $expiresIn, string $refreshToken, string $tokenType)
     {
         $this->accessToken = $accessToken;

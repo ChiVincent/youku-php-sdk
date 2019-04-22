@@ -2,9 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-use stdClass;
+use Chivincent\Youku\Contracts\JsonResponse;
 
-class Error
+class Error extends BaseResponse implements JsonResponse
 {
     /**
      * @var int
@@ -21,7 +21,13 @@ class Error
      */
     private $description;
 
-    public static function json(string $json): ?Error
+    /**
+     * Make Error Response by json.
+     *
+     * @param string $json
+     * @return Error|null
+     */
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 
@@ -39,13 +45,20 @@ class Error
             }
         }
 
-        return new Error(
+        return new self(
             $response->error->code,
             $response->error->type,
             $response->error->description
         );
     }
 
+    /**
+     * Error constructor.
+     *
+     * @param int $code
+     * @param string $type
+     * @param string $description
+     */
     public function __construct(int $code, string $type, string $description)
     {
         $this->code = $code;

@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class Create
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class Create extends BaseResponse implements JsonResponse
 {
     /**
      * @var string
@@ -19,7 +21,13 @@ class Create
      */
     private $uploadServerUri;
 
-    public static function json(string $json): ?Create
+    /**
+     * Make Create Response by json.
+     *
+     * @param string $json
+     * @return Create|null
+     */
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 
@@ -33,7 +41,7 @@ class Create
             }
         }
 
-        return new Create(
+        return new self(
             $response->upload_token,
             $response->video_id,
             $response->upload_server_uri

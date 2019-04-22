@@ -2,14 +2,31 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class NewSlice extends Slice
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class NewSlice extends Slice implements JsonResponse
 {
+    /**
+     * NewSlice constructor.
+     *
+     * @param int $sliceTaskId
+     * @param int $offset
+     * @param int $length
+     * @param int $transferred
+     * @param bool $finished
+     */
     public function __construct(int $sliceTaskId, int $offset, int $length, int $transferred, bool $finished)
     {
         parent::__construct($sliceTaskId, $offset, $length, $transferred, $finished);
     }
 
-    public static function json(string $json): ?NewSlice
+    /**
+     * Make NewSlice Response by json.
+     *
+     * @param string $json
+     * @return NewSlice|null
+     */
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 
@@ -23,7 +40,7 @@ class NewSlice extends Slice
             }
         }
 
-        return new NewSlice(
+        return new self(
             $response->slice_task_id,
             $response->offset,
             $response->length,

@@ -2,14 +2,22 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class Commit
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class Commit extends BaseResponse implements JsonResponse
 {
     /**
      * @var string
      */
     private $videoId;
 
-    public static function json(string $json): ?Commit
+    /**
+     * Make Commit Response by json.
+     *
+     * @param string $json
+     * @return Commit|null
+     */
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 
@@ -17,9 +25,14 @@ class Commit
             return null;
         }
 
-        return new Commit($response->video_id);
+        return new self($response->video_id);
     }
 
+    /**
+     * Commit constructor.
+     *
+     * @param string $videoId
+     */
     public function __construct(string $videoId)
     {
         $this->videoId = $videoId;
