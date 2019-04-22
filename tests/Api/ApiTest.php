@@ -80,7 +80,7 @@ class ApiTest extends TestCase
         ]);
 
         $api = new Api(new Client(['handler' => HandlerStack::create($mock)]));
-        $response = $api->createFile('1.1.1.1', '1a2b3c4d', '87654321', 'avi', 2048);
+        $response = $api->createFile('1.1.1.1', '1a2b3c4d', '87654321', 'avi', 10485760);
 
         $this->assertInstanceOf(CreateFile::class, $response);
     }

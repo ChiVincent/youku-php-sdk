@@ -68,7 +68,7 @@ class Uploader
             $file,
             $interface->getUploadToken(),
             $ip = gethostbyname($interface->getUploadServerUri()),
-            $configure['sliceLength'] ?? 2048
+            $configure['sliceLength'] ?? 10485760
         );
 
         do {
@@ -128,7 +128,7 @@ class Uploader
         );
     }
 
-    protected function createFile(string $file, string $uploadToken, string $ip, int $sliceLength = 2048)
+    protected function createFile(string $file, string $uploadToken, string $ip, int $sliceLength = 5210)
     {
         $this->api->createFile(
             $ip,

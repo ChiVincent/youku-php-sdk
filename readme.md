@@ -40,7 +40,7 @@ $meta = [];
 // $meta['deshake'] = 0;                    // If use the de-shake process, it is 1.  
 $configure = [];
 // $configure['checkWaiting'] = 60;         // Check every 60 seconds if it can be committed.
-// $configure['sliceLength'] = 2048;        // Set the slice length will be upload each progress, default 2MB.
+// $configure['sliceLength'] = 10240;       // Set the slice length will be upload each progress, default 10MB, max 10MB.
 
 $uploader = new Uploader($clientId, $accessToken);
 $uploader->upload($file, $meta, $configure); // It will return video_id for youku.
