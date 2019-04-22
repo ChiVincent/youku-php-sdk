@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class UploadSlice extends Slice
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class UploadSlice extends Slice implements JsonResponse
 {
     /**
      * UploadSlice constructor.
@@ -24,7 +26,7 @@ class UploadSlice extends Slice
      * @param string $json
      * @return UploadSlice|null
      */
-    public static function json(string $json): ?UploadSlice
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 

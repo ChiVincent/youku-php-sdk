@@ -2,7 +2,7 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-abstract class Slice
+abstract class Slice extends BaseResponse
 {
     /**
      * @var int

@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class Cancel
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class Cancel extends BaseResponse implements JsonResponse
 {
     /**
      * @var string
@@ -15,7 +17,7 @@ class Cancel
      * @param string $json
      * @return Cancel|null
      */
-    public static function json(string $json): ?Cancel
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 

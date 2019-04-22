@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class RefreshToken
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class RefreshToken extends BaseResponse implements JsonResponse
 {
     /**
      * @var string
@@ -30,7 +32,7 @@ class RefreshToken
      * @param string $json
      * @return RefreshToken|null
      */
-    public static function json(string $json): ?RefreshToken
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 

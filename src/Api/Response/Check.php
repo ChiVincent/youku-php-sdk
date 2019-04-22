@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class Check
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class Check extends BaseResponse implements JsonResponse
 {
     /**
      * @var int
@@ -40,7 +42,7 @@ class Check
      * @param string $json
      * @return Check|null
      */
-    public static function json(string $json): ?Check
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 

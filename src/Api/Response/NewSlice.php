@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class NewSlice extends Slice
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class NewSlice extends Slice implements JsonResponse
 {
     /**
      * NewSlice constructor.
@@ -24,7 +26,7 @@ class NewSlice extends Slice
      * @param string $json
      * @return NewSlice|null
      */
-    public static function json(string $json): ?NewSlice
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 

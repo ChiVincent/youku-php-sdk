@@ -2,7 +2,9 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class Commit
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class Commit extends BaseResponse implements JsonResponse
 {
     /**
      * @var string
@@ -15,7 +17,7 @@ class Commit
      * @param string $json
      * @return Commit|null
      */
-    public static function json(string $json): ?Commit
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 
