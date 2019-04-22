@@ -17,7 +17,7 @@ class CreateFile extends BaseResponse implements JsonResponse
         $response = json_decode($json);
 
         return $response
-            ? new CreateFile()
+            ? new self()
             : null;
     }
 }

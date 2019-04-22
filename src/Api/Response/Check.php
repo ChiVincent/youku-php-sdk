@@ -56,7 +56,7 @@ class Check extends BaseResponse implements JsonResponse
             }
         }
 
-        return new Check(
+        return new self(
             $response->status,
             $response->transferred_percent,
             $response->confirmed_percent,

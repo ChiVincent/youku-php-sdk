@@ -25,7 +25,7 @@ class Commit extends BaseResponse implements JsonResponse
             return null;
         }
 
-        return new Commit($response->video_id);
+        return new self($response->video_id);
     }
 
     /**

@@ -46,7 +46,7 @@ class RefreshToken extends BaseResponse implements JsonResponse
             }
         }
 
-        return new RefreshToken(
+        return new self(
             $response->access_token,
             $response->expires_in,
             $response->refresh_token,

@@ -40,7 +40,7 @@ class UploadSlice extends Slice implements JsonResponse
             }
         }
 
-        return new UploadSlice(
+        return new self(
             $response->slice_task_id,
             $response->offset,
             $response->length,

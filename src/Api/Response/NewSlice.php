@@ -40,7 +40,7 @@ class NewSlice extends Slice implements JsonResponse
             }
         }
 
-        return new NewSlice(
+        return new self(
             $response->slice_task_id,
             $response->offset,
             $response->length,

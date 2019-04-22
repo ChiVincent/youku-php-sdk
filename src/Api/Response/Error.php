@@ -45,7 +45,7 @@ class Error extends BaseResponse implements JsonResponse
             }
         }
 
-        return new Error(
+        return new self(
             $response->error->code,
             $response->error->type,
             $response->error->description

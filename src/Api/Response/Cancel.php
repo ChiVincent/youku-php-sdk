@@ -25,7 +25,7 @@ class Cancel extends BaseResponse implements JsonResponse
             return null;
         }
 
-        return new Cancel($response->upload_token);
+        return new self($response->upload_token);
     }
 
     /**

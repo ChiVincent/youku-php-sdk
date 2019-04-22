@@ -41,7 +41,7 @@ class Create extends BaseResponse implements JsonResponse
             }
         }
 
-        return new Create(
+        return new self(
             $response->upload_token,
             $response->video_id,
             $response->upload_server_uri
