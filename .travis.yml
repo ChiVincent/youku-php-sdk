@@ -6,7 +6,7 @@ php:
   - '7.3'
 
 install:
-  - composer install --prefer-dist -o -a --quiet
+  - composer install --prefer-dist
 
 notifications:
   email:

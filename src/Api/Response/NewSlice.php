@@ -28,7 +28,7 @@ class NewSlice extends Slice
             $response->offset,
             $response->length,
             $response->transferred,
-            $response->finished,
+            $response->finished
         );
     }
 }
