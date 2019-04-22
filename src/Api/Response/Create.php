@@ -19,6 +19,12 @@ class Create
      */
     private $uploadServerUri;
 
+    /**
+     * Make Create Response by json.
+     *
+     * @param string $json
+     * @return Create|null
+     */
     public static function json(string $json): ?Create
     {
         $response = json_decode($json);

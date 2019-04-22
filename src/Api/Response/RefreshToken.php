@@ -24,6 +24,12 @@ class RefreshToken
      */
     private $tokenType;
 
+    /**
+     * Make RefreshToken Response by json.
+     *
+     * @param string $json
+     * @return RefreshToken|null
+     */
     public static function json(string $json): ?RefreshToken
     {
         $response = json_decode($json);
@@ -46,6 +52,14 @@ class RefreshToken
         );
     }
 
+    /**
+     * RefreshToken constructor.
+     *
+     * @param string $accessToken
+     * @param int $expiresIn
+     * @param string $refreshToken
+     * @param string $tokenType
+     */
     public function __construct(string $accessToken, int $expiresIn, string $refreshToken, string $tokenType)
     {
         $this->accessToken = $accessToken;

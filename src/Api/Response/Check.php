@@ -34,6 +34,12 @@ class Check
      */
     private $uploadServerIp;
 
+    /**
+     * Make Check Response by json.
+     *
+     * @param string $json
+     * @return Check|null
+     */
     public static function json(string $json): ?Check
     {
         $response = json_decode($json);
@@ -58,6 +64,16 @@ class Check
         );
     }
 
+    /**
+     * Check constructor.
+     *
+     * @param int $status
+     * @param int|null $transferredPercent
+     * @param int|null $confirmedPercent
+     * @param int|null $emptyTasks
+     * @param bool $finished
+     * @param string $uploadServerIp
+     */
     public function __construct(int $status, ?int $transferredPercent, ?int $confirmedPercent, ?int $emptyTasks, bool $finished, string $uploadServerIp)
     {
         $this->status = $status;

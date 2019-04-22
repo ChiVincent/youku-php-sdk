@@ -21,6 +21,12 @@ class Error
      */
     private $description;
 
+    /**
+     * Make Error Response by json.
+     *
+     * @param string $json
+     * @return Error|null
+     */
     public static function json(string $json): ?Error
     {
         $response = json_decode($json);
@@ -46,6 +52,13 @@ class Error
         );
     }
 
+    /**
+     * Error constructor.
+     *
+     * @param int $code
+     * @param string $type
+     * @param string $description
+     */
     public function __construct(int $code, string $type, string $description)
     {
         $this->code = $code;

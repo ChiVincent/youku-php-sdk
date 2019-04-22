@@ -4,11 +4,26 @@ namespace Chivincent\Youku\Api\Response;
 
 class UploadSlice extends Slice
 {
+    /**
+     * UploadSlice constructor.
+     *
+     * @param int $sliceTaskId
+     * @param int $offset
+     * @param int $length
+     * @param int $transferred
+     * @param bool $finished
+     */
     public function __construct(int $sliceTaskId, int $offset, int $length, int $transferred, bool $finished)
     {
         parent::__construct($sliceTaskId, $offset, $length, $transferred, $finished);
     }
 
+    /**
+     * Make UploadSlice Response by json.
+     *
+     * @param string $json
+     * @return UploadSlice|null
+     */
     public static function json(string $json): ?UploadSlice
     {
         $response = json_decode($json);
