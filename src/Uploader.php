@@ -68,23 +68,11 @@ class Uploader
             $file,
             $interface->getUploadToken(),
             $ip = gethostbyname($interface->getUploadServerUri()),
-            $configure['sliceLength'] ?? 2048
+            $configure['sliceLength'] ?? 10485760
         );
 
-        do {
-            $slice = $this->getCurrentSlice($interface->getUploadToken(), $ip);
-            $f = fopen($file, 'rb');
-            $uploadedSlice = $this->uploadCurrentSlice(
-                stream_get_contents($f, $slice->getLength(), $slice->getOffset()),
-                $interface->getUploadToken(),
-                $slice->getSliceTaskId(),
-                $slice->getOffset(),
-                $slice->getLength(),
-                $ip
-            );
-            fclose($f);
-            $check = $this->checkUploaded($interface->getUploadToken(), $ip);
-        } while ($uploadedSlice->isFinished() || $check->getStatus() === 4);
+        $slices = $this->sliceBinary($file, $configure['sliceLength'] * 1024);
+        $this->uploadSlices($slices, $interface->getUploadToken(), $ip, $configure['sliceLength'] * 1024);
 
         do {
             $check = $this->checkUploaded($interface->getUploadToken(), $ip);
@@ -92,11 +80,41 @@ class Uploader
             if ($check->getStatus() === 2 || $check->getStatus() === 3) {
                 sleep($configure['checkWaiting'] ?? 60);
             }
-        } while ($check->isFinished() || $check->getStatus() === 1);
+        } while (!$check->isFinished() || $check->getStatus() !== 1);
 
         return $this->api
             ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp())
             ->getVideoId();
+    }
+
+    protected function sliceBinary(string $file, int $chunkSize): array
+    {
+        $file = fopen($file, 'rb');
+        $slices = [];
+        $i = 0;
+        while($data = stream_get_contents($file, $chunkSize, $chunkSize * $i++)){
+            $slices[] = $data;
+        }
+
+        fclose($file);
+
+        return $slices ?? [];
+    }
+
+    protected function uploadSlices(array $slices, string $uploadToken, string $ip, int $chunkSize)
+    {
+        $task = $this->createSliceRoot($uploadToken, $ip)->getSliceTaskId();
+        $i = 0;
+
+        foreach ($slices as $slice) {
+            $this->uploadCurrentSlice(
+                $slice,
+                $uploadToken,
+                $task++,
+                $chunkSize * $i++,
+                $ip
+            );
+        }
     }
 
     protected function createUploadInterface(
@@ -128,7 +146,7 @@ class Uploader
         );
     }
 
-    protected function createFile(string $file, string $uploadToken, string $ip, int $sliceLength = 2048)
+    protected function createFile(string $file, string $uploadToken, string $ip, int $sliceLength = 5210)
     {
         $this->api->createFile(
             $ip,
@@ -139,7 +157,7 @@ class Uploader
         );
     }
 
-    protected function getCurrentSlice(string $uploadToken, string $ip): NewSlice
+    protected function createSliceRoot(string $uploadToken, string $ip): NewSlice
     {
         return $this->api->newSlice(
             $ip,
@@ -147,14 +165,14 @@ class Uploader
         );
     }
 
-    protected function uploadCurrentSlice(string $binary, string $uploadToken, string $sliceTaskId, int $offset, int $length, string $ip): UploadSlice
+    protected function uploadCurrentSlice(string $binary, string $uploadToken, string $sliceTaskId, int $offset, string $ip): UploadSlice
     {
         return $this->api->uploadSlice(
             $ip,
             $uploadToken,
             $sliceTaskId,
             $offset,
-            $length,
+            strlen($binary),
             $binary,
             dechex(crc32($binary)),
             bin2hex(md5($binary, true))

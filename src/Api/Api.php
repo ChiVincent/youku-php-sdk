@@ -191,7 +191,7 @@ class Api
      * @return    CreateFile
      * @throws    UploadException
      */
-    public function createFile(string $ip, string $uploadToken, int $fileSize, string $ext, int $sliceLength = 2048): CreateFile
+    public function createFile(string $ip, string $uploadToken, int $fileSize, string $ext, int $sliceLength = 10485760): CreateFile
     {
         try {
             $response = $this->client->post(sprintf(self::CREATE_FILE_URL, $ip), [

@@ -58,9 +58,9 @@ class Check extends BaseResponse implements JsonResponse
 
         return new self(
             $response->status,
-            $response->transferred_percent,
-            $response->confirmed_percent,
-            $response->empty_tasks,
+            $response->transferred_percent ?? null,
+            $response->confirmed_percent ?? null,
+            $response->empty_tasks ?? null,
             $response->finished,
             $response->upload_server_ip
         );
