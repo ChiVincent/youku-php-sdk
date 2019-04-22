@@ -2,14 +2,22 @@
 
 namespace Chivincent\Youku\Api\Response;
 
-class Cancel
+use Chivincent\Youku\Contracts\JsonResponse;
+
+class Cancel extends BaseResponse implements JsonResponse
 {
     /**
      * @var string
      */
     private $uploadToken;
 
-    public static function json(string $json): ?Cancel
+    /**
+     * Make Cancel Response by json.
+     *
+     * @param string $json
+     * @return Cancel|null
+     */
+    public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
 
@@ -17,9 +25,14 @@ class Cancel
             return null;
         }
 
-        return new Cancel($response->upload_token);
+        return new self($response->upload_token);
     }
 
+    /**
+     * Cancel constructor.
+     *
+     * @param string $uploadToken
+     */
     public function __construct(string $uploadToken)
     {
         $this->uploadToken = $uploadToken;

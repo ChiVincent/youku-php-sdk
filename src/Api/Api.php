@@ -32,6 +32,11 @@ class Api
      */
     protected $client;
 
+    /**
+     * Api constructor.
+     *
+     * @param Client $client
+     */
     public function __construct(Client $client)
     {
         $this->client = $client;
@@ -68,7 +73,7 @@ class Api
 
             return RefreshToken::json($response->getBody()->getContents());
         } catch (ClientException $exception) {
-             throw $exception->hasResponse()
+            throw $exception->hasResponse()
                 ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
                 : new UploadException(null, $exception);
         }

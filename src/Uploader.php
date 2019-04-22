@@ -92,8 +92,7 @@ class Uploader
             if ($check->getStatus() === 2 || $check->getStatus() === 3) {
                 sleep($configure['checkWaiting'] ?? 60);
             }
-
-        } while($check->isFinished() || $check->getStatus() === 1);
+        } while ($check->isFinished() || $check->getStatus() === 1);
 
         return $this->api
             ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp())

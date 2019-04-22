@@ -39,5 +39,4 @@ class CreateTest extends TestCase
         $this->assertSame('xxxxxx', $create->getVideoId());
         $this->assertSame('g01.upload.youku.com', $create->getUploadServerUri());
     }
-
 }
