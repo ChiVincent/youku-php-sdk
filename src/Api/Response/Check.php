@@ -54,8 +54,8 @@ class Check
             $response->confirmed_percent,
             $response->empty_tasks,
             $response->finished,
-            $response->upload_server_ip,
-            );
+            $response->upload_server_ip
+        );
     }
 
     public function __construct(int $status, ?int $transferredPercent, ?int $confirmedPercent, ?int $emptyTasks, bool $finished, string $uploadServerIp)
