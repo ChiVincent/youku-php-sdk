@@ -109,11 +109,13 @@ class Api
      * @param     string $fileName
      * @param     string $fileMd5
      * @param     string $fileSize
-     * @param     null|string $category = null
+     * @param     string $category = 'Other'
+     * @param     string $thumbnail = 'Other'
      * @param     string $copyrightType = 'original'
      * @param     string $publicType = 'all'
      * @param     null|string $watchPassword = null
      * @param     int    $isWeb = 0
+     * @param     int    $isNew = 0
      * @param     int    $deshake = 0
      * @return    Create
      * @throws    UploadException
@@ -127,11 +129,13 @@ class Api
         string $fileName,
         string $fileMd5,
         string $fileSize,
-        ?string $category = null,
+        string $category = 'Other',
+        string $thumbnail = 'Other',
         string $copyrightType = 'original',
         string $publicType = 'all',
         ?string $watchPassword = null,
         int    $isWeb = 0,
+        int    $isNew = 0,
         int    $deshake = 0
     ): Create {
         $queries = [
@@ -143,18 +147,17 @@ class Api
             'file_name' => $fileName,
             'file_md5' => $fileMd5,
             'file_size' => $fileSize,
+            'category' => $category,
+            'thumbnail' => $thumbnail,
             'copyright_type' => $copyrightType,
             'public_type' => $publicType,
-            'isWeb' => $isWeb,
+            'isweb' => $isWeb,
+            'isnew' => $isNew,
             'deshake' => $deshake,
         ];
 
         if ($watchPassword) {
             $queries['watch_password'] = $watchPassword;
-        }
-
-        if ($category) {
-            $queries['category'] = $category;
         }
 
         try {
@@ -378,7 +381,8 @@ class Api
      * @param     string $accessToken
      * @param     string $clientId
      * @param     string $uploadToken
-     * @param     string $uploadServerIp = ''
+     * @param     null|string $uploadServerIp = null
+     * @param     null|string $uploadServerName = null
      * @return    Commit
      * @throws    UploadException
      */
@@ -386,16 +390,26 @@ class Api
         string $accessToken,
         string $clientId,
         string $uploadToken,
-        string $uploadServerIp = ''
+        ?string $uploadServerIp = null,
+        ?string $uploadServerName = null
     ): Commit {
         try {
+            $params = [
+                'access_token' => $accessToken,
+                'client_id' => $clientId,
+                'upload_token' => $uploadToken,
+            ];
+
+            if ($uploadServerIp) {
+                $params['upload_server_ip'] = $uploadServerIp;
+            }
+
+            if ($uploadServerName) {
+                $params['upload_server_name'] = $uploadServerName;
+            }
+
             $response = $this->client->post(self::COMMIT_URL, [
-                'form_params' => [
-                    'access_token' => $accessToken,
-                    'client_id' => $clientId,
-                    'upload_token' => $uploadToken,
-                    'upload_server_ip' => $uploadServerIp,
-                ],
+                'form_params' => $params,
             ]);
 
             return Commit::json($response->getBody()->getContents());
