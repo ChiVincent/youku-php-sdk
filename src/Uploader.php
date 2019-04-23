@@ -119,7 +119,7 @@ class Uploader
         $file = fopen($file, 'rb');
         $slices = [];
         $i = 0;
-        while($data = stream_get_contents($file, $chunkSize, $chunkSize * $i++)){
+        while ($data = stream_get_contents($file, $chunkSize, $chunkSize * $i++)) {
             $slices[] = $data;
         }
 
