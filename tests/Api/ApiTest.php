@@ -2,6 +2,7 @@
 
 namespace Tests\Api;
 
+use Chivincent\Youku\Api\Response\StsInf;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use Chivincent\Youku\Api\Api;
@@ -277,5 +278,30 @@ class ApiTest extends TestCase
         $this->expectExceptionCode(1005);
         $this->expectExceptionMessage('SystemException: Client id invalid');
         $api->refreshToken('123', 'refresh_token', '12345678');
+    }
+
+    public function testGetStsInf()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], json_encode([
+                'upload_token' => '1a2b3c4d',
+                'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
+                'security_token' => 'fake-security-token',
+                'temp_access_id' => 'fake-temp-access-id',
+                'temp_access_secret' => 'fake-temp-access-secret',
+                'expire_time' => '2019-01-07T13:03:04Z',
+            ])),
+        ]);
+
+        $api = new Api(new Client(['handler' => HandlerStack::create($mock)]));
+        $response = $api->getStsInf('xxxxxx', 'fake-access-token', '1a2b3c4d', 'yk-source-upload', 'fake-oss-object');
+
+        $this->assertInstanceOf(StsInf::class, $response);
+        $this->assertSame('1a2b3c4d', $response->getUploadToken());
+        $this->assertSame('oss-cn-shanghai.aliyuncs.com', $response->getEndpoint());
+        $this->assertSame('fake-security-token', $response->getSecurityToken());
+        $this->assertSame('fake-temp-access-id', $response->getTempAccessId());
+        $this->assertSame('fake-temp-access-secret', $response->getTempAccessSecret());
+        $this->assertSame('2019-01-07T13:03:04Z', $response->getExpireTime());
     }
 }

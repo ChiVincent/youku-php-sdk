@@ -2,6 +2,7 @@
 
 namespace Chivincent\Youku\Api;
 
+use Chivincent\Youku\Api\Response\StsInf;
 use GuzzleHttp\Client;
 use Psr\Http\Message\StreamInterface;
 use Chivincent\Youku\Api\Response\Check;
@@ -26,6 +27,7 @@ class Api
     const CHECK_URL = 'http://%s/gupload/check';
     const COMMIT_URL = 'https://api.youku.com/uploads/commit.json';
     const CANCEL_URL = 'https://api.youku.com/uploads/cancel.json';
+    const GET_STS_INF_URL = 'https://api.youku.com/uploads/get_sts_inf.json';
 
     /**
      * @var Client
@@ -461,6 +463,32 @@ class Api
             ]);
 
             return Cancel::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
+    }
+
+    public function getStsInf(
+        string $clientId,
+        string $accessToken,
+        string $uploadToken,
+        string $ossBucket,
+        string $ossObject
+    ) {
+        try {
+            $response = $this->client->post(self::GET_STS_INF_URL, [
+                'query' => [
+                    'client_id' => $clientId,
+                    'access_token' => $accessToken,
+                    'upload_token' => $uploadToken,
+                    'oss_bucket' => $ossBucket,
+                    'oss_object' => $ossObject,
+                ],
+            ]);
+
+            return StsInf::json($response->getBody()->getContents());
         } catch (ClientException $exception) {
             throw $exception->hasResponse()
                 ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
