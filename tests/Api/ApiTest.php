@@ -41,7 +41,7 @@ class ApiTest extends TestCase
         $this->assertSame('bearer', $response->getTokenType());
     }
 
-    public function testCreate()
+    public function testCreateInOriginalMethod()
     {
         $mock = new MockHandler([
             new Response(201, [], json_encode([
@@ -67,6 +67,54 @@ class ApiTest extends TestCase
         $this->assertSame('1a2b3c4d', $response->getUploadToken());
         $this->assertSame('xxxxxx', $response->getVideoId());
         $this->assertSame('g01.upload.youku.com', $response->getUploadServerUri());
+    }
+
+    public function testCreateInOssMethod()
+    {
+        $mock = new MockHandler([
+            new Response(201, [], json_encode([
+                'upload_token' => '1a2b3c4d',
+                'video_id' => 'fake-video-id',
+                'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
+                'security_token' => 'fake-security-token',
+                'oss_bucket' => 'yk-source-upload',
+                'oss_object' => 'fake-oss-object',
+                'temp_access_id' => 'fake-temp-access-id',
+                'temp_access_secret' => 'fake-temp-access-secret',
+                'expire_time' => '2019-01-07T13:03:04Z',
+            ])),
+        ]);
+
+        $api = new Api(new Client(['handler' => HandlerStack::create($mock)]));
+        $response = $api->create(
+            '123',
+            'demo_access_token',
+            'demo video',
+            'demo',
+            'this is a demo',
+            'demo.avi',
+            '00000000000000000000000000',
+            '123456',
+            'Other',
+            'Other',
+            'original',
+            'all',
+            null,
+            0,
+            1,
+            0
+        );
+
+        $this->assertInstanceOf(Create::class, $response);
+        $this->assertSame('1a2b3c4d', $response->getUploadToken());
+        $this->assertSame('fake-video-id', $response->getVideoId());
+        $this->assertSame('oss-cn-shanghai.aliyuncs.com', $response->getEndpoint());
+        $this->assertSame('fake-security-token', $response->getSecurityToken());
+        $this->assertSame('yk-source-upload', $response->getOssBucket());
+        $this->assertSame('fake-oss-object', $response->getOssObject());
+        $this->assertSame('fake-temp-access-id', $response->getTempAccessId());
+        $this->assertSame('fake-temp-access-secret', $response->getTempAccessSecret());
+        $this->assertSame('2019-01-07T13:03:04Z', $response->getExpireTime());
     }
 
     public function testCreateFile()
@@ -152,7 +200,7 @@ class ApiTest extends TestCase
         $this->assertFalse($response->isFinished());
     }
 
-    public function testCommit()
+    public function testCommitInLargeFileMethod()
     {
         $mock = new MockHandler([
             new Response(200, [], json_encode([
@@ -162,6 +210,36 @@ class ApiTest extends TestCase
 
         $api = new Api(new Client(['handler' => HandlerStack::create($mock)]));
         $response = $api->commit('demo_access_token', '123', '1a2b3c4d', '1.2.3.4');
+
+        $this->assertInstanceOf(Commit::class, $response);
+        $this->assertSame('XMjg1MTcyNDQ0', $response->getVideoId());
+    }
+
+    public function testCommitInOssMethod()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], json_encode([
+                'video_id' => 'XMjg1MTcyNDQ0'
+            ])),
+        ]);
+
+        $api = new Api(new Client(['handler' => HandlerStack::create($mock)]));
+        $response = $api->commit('demo_access_token', '123', '1a2b3c4d');
+
+        $this->assertInstanceOf(Commit::class, $response);
+        $this->assertSame('XMjg1MTcyNDQ0', $response->getVideoId());
+    }
+
+    public function testCommitInWebMethod()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], json_encode([
+                'video_id' => 'XMjg1MTcyNDQ0'
+            ])),
+        ]);
+
+        $api = new Api(new Client(['handler' => HandlerStack::create($mock)]));
+        $response = $api->commit('demo_access_token', '123', '1a2b3c4d', null, 'fake-upload-server');
 
         $this->assertInstanceOf(Commit::class, $response);
         $this->assertSame('XMjg1MTcyNDQ0', $response->getVideoId());

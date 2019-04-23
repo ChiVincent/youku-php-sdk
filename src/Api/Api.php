@@ -381,7 +381,8 @@ class Api
      * @param     string $accessToken
      * @param     string $clientId
      * @param     string $uploadToken
-     * @param     string $uploadServerIp = ''
+     * @param     null|string $uploadServerIp = null
+     * @param     null|string $uploadServerName = null
      * @return    Commit
      * @throws    UploadException
      */
@@ -389,16 +390,26 @@ class Api
         string $accessToken,
         string $clientId,
         string $uploadToken,
-        string $uploadServerIp = ''
+        ?string $uploadServerIp = null,
+        ?string $uploadServerName = null
     ): Commit {
         try {
+            $params = [
+                'access_token' => $accessToken,
+                'client_id' => $clientId,
+                'upload_token' => $uploadToken,
+            ];
+
+            if ($uploadServerIp) {
+                $params['upload_server_ip'] = $uploadServerIp;
+            }
+
+            if ($uploadServerName) {
+                $params['upload_server_name'] = $uploadServerName;
+            }
+
             $response = $this->client->post(self::COMMIT_URL, [
-                'form_params' => [
-                    'access_token' => $accessToken,
-                    'client_id' => $clientId,
-                    'upload_token' => $uploadToken,
-                    'upload_server_ip' => $uploadServerIp,
-                ],
+                'form_params' => $params,
             ]);
 
             return Commit::json($response->getBody()->getContents());
