@@ -2,6 +2,7 @@
 
 namespace Chivincent\Youku\Api;
 
+use Chivincent\Youku\Api\Response\StsInf;
 use GuzzleHttp\Client;
 use Psr\Http\Message\StreamInterface;
 use Chivincent\Youku\Api\Response\Check;
@@ -26,6 +27,7 @@ class Api
     const CHECK_URL = 'http://%s/gupload/check';
     const COMMIT_URL = 'https://api.youku.com/uploads/commit.json';
     const CANCEL_URL = 'https://api.youku.com/uploads/cancel.json';
+    const GET_STS_INF_URL = 'https://api.youku.com/uploads/get_sts_inf.json';
 
     /**
      * @var Client
@@ -109,11 +111,13 @@ class Api
      * @param     string $fileName
      * @param     string $fileMd5
      * @param     string $fileSize
-     * @param     null|string $category = null
+     * @param     string $category = 'Other'
+     * @param     string $thumbnail = 'Other'
      * @param     string $copyrightType = 'original'
      * @param     string $publicType = 'all'
      * @param     null|string $watchPassword = null
      * @param     int    $isWeb = 0
+     * @param     int    $isNew = 0
      * @param     int    $deshake = 0
      * @return    Create
      * @throws    UploadException
@@ -128,10 +132,12 @@ class Api
         string $fileMd5,
         string $fileSize,
         ?string $category = null,
+        ?string $thumbnail = null,
         string $copyrightType = 'original',
         string $publicType = 'all',
         ?string $watchPassword = null,
         int    $isWeb = 0,
+        int    $isNew = 0,
         int    $deshake = 0
     ): Create {
         $queries = [
@@ -145,12 +151,17 @@ class Api
             'file_size' => $fileSize,
             'copyright_type' => $copyrightType,
             'public_type' => $publicType,
-            'isWeb' => $isWeb,
+            'isweb' => $isWeb,
+            'isnew' => $isNew,
             'deshake' => $deshake,
         ];
 
         if ($watchPassword) {
             $queries['watch_password'] = $watchPassword;
+        }
+
+        if ($thumbnail) {
+            $queries['thumbnail'] = $thumbnail;
         }
 
         if ($category) {
@@ -378,7 +389,8 @@ class Api
      * @param     string $accessToken
      * @param     string $clientId
      * @param     string $uploadToken
-     * @param     string $uploadServerIp = ''
+     * @param     null|string $uploadServerIp = null
+     * @param     null|string $uploadServerName = null
      * @return    Commit
      * @throws    UploadException
      */
@@ -386,16 +398,26 @@ class Api
         string $accessToken,
         string $clientId,
         string $uploadToken,
-        string $uploadServerIp = ''
+        ?string $uploadServerIp = null,
+        ?string $uploadServerName = null
     ): Commit {
         try {
+            $params = [
+                'access_token' => $accessToken,
+                'client_id' => $clientId,
+                'upload_token' => $uploadToken,
+            ];
+
+            if ($uploadServerIp) {
+                $params['upload_server_ip'] = $uploadServerIp;
+            }
+
+            if ($uploadServerName) {
+                $params['upload_server_name'] = $uploadServerName;
+            }
+
             $response = $this->client->post(self::COMMIT_URL, [
-                'form_params' => [
-                    'access_token' => $accessToken,
-                    'client_id' => $clientId,
-                    'upload_token' => $uploadToken,
-                    'upload_server_ip' => $uploadServerIp,
-                ],
+                'form_params' => $params,
             ]);
 
             return Commit::json($response->getBody()->getContents());
@@ -447,6 +469,32 @@ class Api
             ]);
 
             return Cancel::json($response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw $exception->hasResponse()
+                ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)
+                : new UploadException(null, $exception);
+        }
+    }
+
+    public function getStsInf(
+        string $clientId,
+        string $accessToken,
+        string $uploadToken,
+        string $ossBucket,
+        string $ossObject
+    ) {
+        try {
+            $response = $this->client->post(self::GET_STS_INF_URL, [
+                'query' => [
+                    'client_id' => $clientId,
+                    'access_token' => $accessToken,
+                    'upload_token' => $uploadToken,
+                    'oss_bucket' => $ossBucket,
+                    'oss_object' => $ossObject,
+                ],
+            ]);
+
+            return StsInf::json($response->getBody()->getContents());
         } catch (ClientException $exception) {
             throw $exception->hasResponse()
                 ? new UploadException(Error::json($exception->getResponse()->getBody()->getContents()), $exception)

@@ -2,6 +2,8 @@
 
 namespace Chivincent\Youku;
 
+use Chivincent\Youku\Api\Response\Commit;
+use Chivincent\Youku\Api\Response\Error;
 use GuzzleHttp\Client;
 use Chivincent\Youku\Api\Api;
 use Chivincent\Youku\Api\Response\Check;
@@ -9,6 +11,8 @@ use Chivincent\Youku\Api\Response\Create;
 use Chivincent\Youku\Api\Response\NewSlice;
 use Chivincent\Youku\Api\Response\UploadSlice;
 use Chivincent\Youku\Exception\UploadException;
+use OSS\Core\OssException;
+use OSS\OssClient;
 
 class Uploader
 {
@@ -58,12 +62,23 @@ class Uploader
             $meta['tags'] ?? [],
             $meta['description'] ?? '',
             $meta['category'] ?? null,
+            $meta['thumbnail'] ?? null,
             $meta['copyrightType'] ?? 'original',
             $meta['publicType'] ?? 'all',
             $meta['watchPassword'] ?? null,
+            $configure['oss'] ?? 0,
             $meta['deshake'] ?? 0
         );
 
+        $commit = $configure['oss']
+            ? $this->uploadInOssMethod($file, $interface)
+            : $this->uploadInOriginalMethod($file, $interface, $configure);
+
+        return $commit->getVideoId() ?? '';
+    }
+
+    protected function uploadInOriginalMethod(string $file, Create $interface, array $configure): Commit
+    {
         $this->createFile(
             $file,
             $interface->getUploadToken(),
@@ -83,8 +98,20 @@ class Uploader
         } while (!$check->isFinished() || $check->getStatus() !== 1);
 
         return $this->api
-            ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp())
-            ->getVideoId();
+            ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp());
+    }
+
+    protected function uploadInOssMethod(string $file, Create $interface): Commit
+    {
+        try {
+            $ossClient = new OssClient($interface->getTempAccessId(), $interface->getTempAccessSecret(), $interface->getEndpoint());
+            $ossClient->uploadFile($interface->getOssBucket(), $interface->getOssObject(), $file);
+
+            return $this->api
+                ->commit($this->accessToken, $this->clientId, $interface->getUploadToken());
+        } catch (OssException $exception) {
+            throw new UploadException(new Error($exception->getCode(), 'Aliyun Oss Exception', $exception->getMessage()), $exception);
+        }
     }
 
     protected function sliceBinary(string $file, int $chunkSize): array
@@ -92,7 +119,7 @@ class Uploader
         $file = fopen($file, 'rb');
         $slices = [];
         $i = 0;
-        while($data = stream_get_contents($file, $chunkSize, $chunkSize * $i++)){
+        while ($data = stream_get_contents($file, $chunkSize, $chunkSize * $i++)) {
             $slices[] = $data;
         }
 
@@ -122,10 +149,12 @@ class Uploader
         string $title,
         array $tags,
         string $description,
-        string $category = null,
+        ?string $category = null,
+        ?string $thumbnail = null,
         string $copyrightType = 'original',
         string $publicType = 'all',
         ?string $watchPassword = null,
+        int $isNew = 0,
         int $deshake = 0
     ): Create {
         return $this->api->create(
@@ -138,10 +167,12 @@ class Uploader
             md5_file($file),
             filesize($file),
             $category,
+            $thumbnail,
             $copyrightType,
             $publicType,
             $watchPassword,
             0,
+            $isNew,
             $deshake
         );
     }
