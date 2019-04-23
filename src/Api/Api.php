@@ -132,7 +132,7 @@ class Api
         string $fileMd5,
         string $fileSize,
         string $category = 'Other',
-        string $thumbnail = 'Other',
+        ?string $thumbnail = null,
         string $copyrightType = 'original',
         string $publicType = 'all',
         ?string $watchPassword = null,
@@ -150,7 +150,6 @@ class Api
             'file_md5' => $fileMd5,
             'file_size' => $fileSize,
             'category' => $category,
-            'thumbnail' => $thumbnail,
             'copyright_type' => $copyrightType,
             'public_type' => $publicType,
             'isweb' => $isWeb,
@@ -160,6 +159,10 @@ class Api
 
         if ($watchPassword) {
             $queries['watch_password'] = $watchPassword;
+        }
+
+        if ($thumbnail) {
+            $queries['thumbnail'] = $thumbnail;
         }
 
         try {

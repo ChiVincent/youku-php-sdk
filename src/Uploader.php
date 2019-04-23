@@ -3,6 +3,7 @@
 namespace Chivincent\Youku;
 
 use Chivincent\Youku\Api\Response\Commit;
+use Chivincent\Youku\Api\Response\Error;
 use GuzzleHttp\Client;
 use Chivincent\Youku\Api\Api;
 use Chivincent\Youku\Api\Response\Check;
@@ -10,6 +11,8 @@ use Chivincent\Youku\Api\Response\Create;
 use Chivincent\Youku\Api\Response\NewSlice;
 use Chivincent\Youku\Api\Response\UploadSlice;
 use Chivincent\Youku\Exception\UploadException;
+use OSS\Core\OssException;
+use OSS\OssClient;
 
 class Uploader
 {
@@ -59,7 +62,7 @@ class Uploader
             $meta['tags'] ?? [],
             $meta['description'] ?? '',
             $meta['category'] ?? 'Other',
-            $meta['thumbnail'] ?? 'Other',
+            $meta['thumbnail'] ?? null,
             $meta['copyrightType'] ?? 'original',
             $meta['publicType'] ?? 'all',
             $meta['watchPassword'] ?? null,
@@ -67,9 +70,9 @@ class Uploader
             $meta['deshake'] ?? 0
         );
 
-        if ($configure['oss'] === 0) {
-            $commit = $this->uploadInOriginalMethod($file, $interface, $configure);
-        }
+        $commit = $configure === 0
+            ? $this->uploadInOriginalMethod($file, $interface, $configure)
+            : $this->uploadInOssMethod($file, $interface);
 
         return $commit->getVideoId() ?? '';
     }
@@ -96,6 +99,19 @@ class Uploader
 
         return $this->api
             ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp());
+    }
+
+    protected function uploadInOssMethod(string $file, Create $interface): Commit
+    {
+        try {
+            $ossClient = new OssClient($interface->getTempAccessId(), $interface->getTempAccessSecret(), $interface->getEndpoint());
+            $ossClient->uploadFile($interface->getOssBucket(), $interface->getOssObject(), $file);
+
+            return $this->api
+                ->commit($this->accessToken, $this->clientId, $interface->getUploadToken());
+        } catch (OssException $exception) {
+            throw new UploadException(new Error($exception->getCode(), 'Aliyun Oss Exception', $exception->getMessage()), $exception);
+        }
     }
 
     protected function sliceBinary(string $file, int $chunkSize): array
@@ -134,7 +150,7 @@ class Uploader
         array $tags,
         string $description,
         string $category = 'Other',
-        string $thumbnail = 'Other',
+        ?string $thumbnail = null,
         string $copyrightType = 'original',
         string $publicType = 'all',
         ?string $watchPassword = null,
