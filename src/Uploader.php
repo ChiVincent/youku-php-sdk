@@ -2,6 +2,7 @@
 
 namespace Chivincent\Youku;
 
+use Chivincent\Youku\Api\Response\Commit;
 use GuzzleHttp\Client;
 use Chivincent\Youku\Api\Api;
 use Chivincent\Youku\Api\Response\Check;
@@ -66,6 +67,15 @@ class Uploader
             $meta['deshake'] ?? 0
         );
 
+        if ($configure['oss'] === 0) {
+            $commit = $this->uploadInOriginalMethod($file, $interface, $configure);
+        }
+
+        return $commit->getVideoId() ?? '';
+    }
+
+    protected function uploadInOriginalMethod(string $file, Create $interface, array $configure): Commit
+    {
         $this->createFile(
             $file,
             $interface->getUploadToken(),
@@ -85,8 +95,7 @@ class Uploader
         } while (!$check->isFinished() || $check->getStatus() !== 1);
 
         return $this->api
-            ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp())
-            ->getVideoId();
+            ->commit($this->accessToken, $this->clientId, $interface->getUploadToken(), $check->getUploadServerIp());
     }
 
     protected function sliceBinary(string $file, int $chunkSize): array
