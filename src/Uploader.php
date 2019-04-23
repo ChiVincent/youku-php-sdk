@@ -61,7 +61,7 @@ class Uploader
             $meta['title'] ?? basename($file),
             $meta['tags'] ?? [],
             $meta['description'] ?? '',
-            $meta['category'] ?? 'Other',
+            $meta['category'] ?? null,
             $meta['thumbnail'] ?? null,
             $meta['copyrightType'] ?? 'original',
             $meta['publicType'] ?? 'all',
@@ -70,9 +70,9 @@ class Uploader
             $meta['deshake'] ?? 0
         );
 
-        $commit = $configure === 0
-            ? $this->uploadInOriginalMethod($file, $interface, $configure)
-            : $this->uploadInOssMethod($file, $interface);
+        $commit = $configure['oss']
+            ? $this->uploadInOssMethod($file, $interface)
+            : $this->uploadInOriginalMethod($file, $interface, $configure);
 
         return $commit->getVideoId() ?? '';
     }
@@ -149,7 +149,7 @@ class Uploader
         string $title,
         array $tags,
         string $description,
-        string $category = 'Other',
+        ?string $category = null,
         ?string $thumbnail = null,
         string $copyrightType = 'original',
         string $publicType = 'all',

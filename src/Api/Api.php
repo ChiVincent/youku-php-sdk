@@ -131,7 +131,7 @@ class Api
         string $fileName,
         string $fileMd5,
         string $fileSize,
-        string $category = 'Other',
+        ?string $category = null,
         ?string $thumbnail = null,
         string $copyrightType = 'original',
         string $publicType = 'all',
@@ -149,7 +149,6 @@ class Api
             'file_name' => $fileName,
             'file_md5' => $fileMd5,
             'file_size' => $fileSize,
-            'category' => $category,
             'copyright_type' => $copyrightType,
             'public_type' => $publicType,
             'isweb' => $isWeb,
@@ -163,6 +162,10 @@ class Api
 
         if ($thumbnail) {
             $queries['thumbnail'] = $thumbnail;
+        }
+
+        if ($category) {
+            $queries['category'] = $category;
         }
 
         try {
