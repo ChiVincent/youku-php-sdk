@@ -109,11 +109,13 @@ class Api
      * @param     string $fileName
      * @param     string $fileMd5
      * @param     string $fileSize
-     * @param     null|string $category = null
+     * @param     string $category = 'Other'
+     * @param     string $thumbnail = 'Other'
      * @param     string $copyrightType = 'original'
      * @param     string $publicType = 'all'
      * @param     null|string $watchPassword = null
      * @param     int    $isWeb = 0
+     * @param     int    $isNew = 0
      * @param     int    $deshake = 0
      * @return    Create
      * @throws    UploadException
@@ -127,11 +129,13 @@ class Api
         string $fileName,
         string $fileMd5,
         string $fileSize,
-        ?string $category = null,
+        string $category = 'Other',
+        string $thumbnail = 'Other',
         string $copyrightType = 'original',
         string $publicType = 'all',
         ?string $watchPassword = null,
         int    $isWeb = 0,
+        int    $isNew = 0,
         int    $deshake = 0
     ): Create {
         $queries = [
@@ -143,18 +147,17 @@ class Api
             'file_name' => $fileName,
             'file_md5' => $fileMd5,
             'file_size' => $fileSize,
+            'category' => $category,
+            'thumbnail' => $thumbnail,
             'copyright_type' => $copyrightType,
             'public_type' => $publicType,
-            'isWeb' => $isWeb,
+            'isweb' => $isWeb,
+            'isnew' => $isNew,
             'deshake' => $deshake,
         ];
 
         if ($watchPassword) {
             $queries['watch_password'] = $watchPassword;
-        }
-
-        if ($category) {
-            $queries['category'] = $category;
         }
 
         try {

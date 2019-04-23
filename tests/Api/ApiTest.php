@@ -60,10 +60,6 @@ class ApiTest extends TestCase
             'this is a demo',
             'demo.avi',
             '00000000000000000000000000',
-            '123456',
-            null,
-            'original',
-            'password',
             '123456'
         );
 

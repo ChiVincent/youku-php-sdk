@@ -57,10 +57,12 @@ class Uploader
             $meta['title'] ?? basename($file),
             $meta['tags'] ?? [],
             $meta['description'] ?? '',
-            $meta['category'] ?? null,
+            $meta['category'] ?? 'Other',
+            $meta['thumbnail'] ?? 'Other',
             $meta['copyrightType'] ?? 'original',
             $meta['publicType'] ?? 'all',
             $meta['watchPassword'] ?? null,
+            $configure['oss'] ?? 0,
             $meta['deshake'] ?? 0
         );
 
@@ -122,10 +124,12 @@ class Uploader
         string $title,
         array $tags,
         string $description,
-        string $category = null,
+        string $category = 'Other',
+        string $thumbnail = 'Other',
         string $copyrightType = 'original',
         string $publicType = 'all',
         ?string $watchPassword = null,
+        int $isNew = 0,
         int $deshake = 0
     ): Create {
         return $this->api->create(
@@ -138,10 +142,12 @@ class Uploader
             md5_file($file),
             filesize($file),
             $category,
+            $thumbnail,
             $copyrightType,
             $publicType,
             $watchPassword,
             0,
+            $isNew,
             $deshake
         );
     }
