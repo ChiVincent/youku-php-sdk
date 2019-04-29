@@ -32,7 +32,7 @@ class NewSlice extends Slice implements JsonResponse
         $response = json_decode($json);
 
         if (isset($response->error)) {
-            throw new UploadException($json);
+            throw new UploadException(Error::json($json));
         }
 
         $properties = [

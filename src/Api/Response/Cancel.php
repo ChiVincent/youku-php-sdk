@@ -23,7 +23,7 @@ class Cancel extends BaseResponse implements JsonResponse
         $response = json_decode($json);
 
         if (isset($response->error)) {
-            throw new UploadException($json);
+            throw new UploadException(Error::json($json));
         }
 
         if (!property_exists($response, 'upload_token')) {
