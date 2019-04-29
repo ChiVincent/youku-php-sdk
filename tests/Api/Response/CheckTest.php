@@ -3,6 +3,7 @@
 namespace Tests\Api\Response;
 
 use Chivincent\Youku\Api\Response\Check;
+use Chivincent\Youku\Exception\UploadException;
 use PHPUnit\Framework\TestCase;
 
 class CheckTest extends TestCase
@@ -34,6 +35,20 @@ class CheckTest extends TestCase
         ]));
 
         $this->assertNull($check);
+    }
+
+    public function testJsonHasError()
+    {
+        $this->expectException(UploadException::class);
+        $this->expectExceptionCode(1001);
+        $this->expectExceptionMessage('System Exception: Service temporarily unavailable');
+        Check::json(json_encode([
+            'error' => [
+                'code' => 1001,
+                'type' => 'System Exception',
+                'description' => 'Service temporarily unavailable',
+            ]
+        ]));
     }
 
     public function testConstructor()

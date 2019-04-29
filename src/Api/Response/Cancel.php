@@ -3,6 +3,7 @@
 namespace Chivincent\Youku\Api\Response;
 
 use Chivincent\Youku\Contracts\JsonResponse;
+use Chivincent\Youku\Exception\UploadException;
 
 class Cancel extends BaseResponse implements JsonResponse
 {
@@ -20,6 +21,10 @@ class Cancel extends BaseResponse implements JsonResponse
     public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
+
+        if (isset($response->error)) {
+            throw new UploadException(Error::json($json));
+        }
 
         if (!property_exists($response, 'upload_token')) {
             return null;
