@@ -482,7 +482,7 @@ class Api
         string $uploadToken,
         string $ossBucket,
         string $ossObject
-    ) {
+    ): StsInf {
         try {
             $response = $this->client->post(self::GET_STS_INF_URL, [
                 'query' => [
