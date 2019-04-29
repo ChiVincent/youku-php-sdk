@@ -3,6 +3,7 @@
 namespace Chivincent\Youku\Api\Response;
 
 use Chivincent\Youku\Contracts\JsonResponse;
+use Chivincent\Youku\Exception\UploadException;
 
 class Create extends BaseResponse implements JsonResponse
 {
@@ -65,6 +66,10 @@ class Create extends BaseResponse implements JsonResponse
     public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
+
+        if (isset($response->error)) {
+            throw new UploadException(Error::json($json));
+        }
 
         $properties = [
             'upload_token', 'video_id',
