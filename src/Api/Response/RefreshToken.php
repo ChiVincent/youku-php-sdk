@@ -3,6 +3,7 @@
 namespace Chivincent\Youku\Api\Response;
 
 use Chivincent\Youku\Contracts\JsonResponse;
+use Chivincent\Youku\Exception\UploadException;
 
 class RefreshToken extends BaseResponse implements JsonResponse
 {
@@ -35,6 +36,10 @@ class RefreshToken extends BaseResponse implements JsonResponse
     public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
+
+        if (isset($response->error)) {
+            throw new UploadException($json);
+        }
 
         $properties = [
             'access_token', 'expires_in', 'refresh_token', 'token_type',

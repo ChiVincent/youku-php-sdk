@@ -3,6 +3,7 @@
 namespace Chivincent\Youku\Api\Response;
 
 use Chivincent\Youku\Contracts\JsonResponse;
+use Chivincent\Youku\Exception\UploadException;
 
 class NewSlice extends Slice implements JsonResponse
 {
@@ -29,6 +30,10 @@ class NewSlice extends Slice implements JsonResponse
     public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
+
+        if (isset($response->error)) {
+            throw new UploadException($json);
+        }
 
         $properties = [
             'slice_task_id', 'offset', 'length', 'transferred', 'finished',

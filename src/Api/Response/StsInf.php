@@ -3,6 +3,7 @@
 namespace Chivincent\Youku\Api\Response;
 
 use Chivincent\Youku\Contracts\JsonResponse;
+use Chivincent\Youku\Exception\UploadException;
 
 class StsInf extends BaseResponse implements JsonResponse
 {
@@ -45,6 +46,10 @@ class StsInf extends BaseResponse implements JsonResponse
     public static function json(string $json): ?BaseResponse
     {
         $response = json_decode($json);
+
+        if (isset($response->error)) {
+            throw new UploadException($json);
+        }
 
         $properties = [
             'upload_token', 'endpoint', 'security_token', 'temp_access_id', 'temp_access_secret', 'expire_time'
