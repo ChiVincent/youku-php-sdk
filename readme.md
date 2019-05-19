@@ -9,12 +9,11 @@ The youku.com php sdk.
 ## Installation
 
 ```bash
-composer require chivincent/youku-uploader
+composer require chivincent/youku-php-sdk
 ```
 
 ## Todo
 
-- Refresh access token automatically.
 - Support OSS upload method.
 
 ## Usage
