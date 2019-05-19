@@ -1,8 +1,11 @@
 {
-    "name": "chivincent/youku-uploader",
-    "description": "Upload videos to youku by youku-apis.",
+    "name": "chivincent/youku-php-sdk",
+    "description": "Unofficial PHP SDK for youku.com",
     "type": "library",
     "license": "MIT",
+    "keywords": [
+	    "PHP", "PHP SDK", "youku", "youku.com"
+    ],
     "authors": [
         {
             "name": "Vincent Chi",
